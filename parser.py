@@ -2,6 +2,7 @@ import sys
 import json
 from function import Function
 from factories import *
+from context import Context
 
 class Parser:
     def __init__(self, fileName):
@@ -16,19 +17,25 @@ class Parser:
             
     
     def parse(self):
-        variables = self.code["main"]["variables"]
-        instructions = self.code["main"]["instructions"]
+        context = Context()
+        for fnName, fnData in self.code.items():
+            function = Function(fnName)
+            variables = self.code[fnName]["variables"]
+            instructions = self.code[fnName]["instructions"]
+            
+            for variable in variables:
+                function.addVariable(self.variableFactory.constructFromJson(variable))
 
-        main = Function("main")
-        for variable in variables:
-            main.addVariable(self.variableFactory.constructFromJson(variable))
+            for instruction in instructions:
+                function.addInstruction(self.instructionFactory.constructFromJson(instruction))
+            
+            context.addFunction(function)
+        return context
 
-        for instruction in instructions:
-            main.addInstruction(self.instructionFactory.constructFromJson(instruction))
-
-
+''' TESTING '''
 inputFile = sys.argv[1]
 parser = Parser(inputFile)
-parser.parse()
+context = parser.parse()
+context.execute()
 
 

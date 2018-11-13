@@ -10,3 +10,6 @@ class Function:
 
     def addVariable(self, variable):
         self.variables.append(variable)
+
+    def execute(self, context):
+        print(self.name)
