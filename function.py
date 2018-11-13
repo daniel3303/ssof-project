@@ -5,8 +5,8 @@ class Function:
         self.instructions = []
         self.variables = []
 
-    def addInstruction(instruction):
+    def addInstruction(self, instruction):
         self.instructions.append(instruction)
 
-    def addVariable(variable):
+    def addVariable(self, variable):
         self.variables.append(variable)
