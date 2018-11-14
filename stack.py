@@ -1,7 +1,9 @@
 # Models the known stack
 class Stack:
 	def __init__(self):
-		self.elements = {} # key is start addr
+		# key is start addr relative to RBP with minus, ex: 0x4 is RBP-0x4
+		# for RBP+0x4 we have -0x4
+		self.elements = {} 
 
 	def elementExists(key):
 		return key in self.elements
@@ -18,7 +20,8 @@ class Stack:
 		if key in self.elements:
 			del self.elements[key]
 
-	def updateElement(key, stackElement):
+	def updateElement(stackElement):
+		key = stackElement.startAddr
 		oldElement = self.getElement(key)
 		if key in self.elements:
 			self.delElement(key)

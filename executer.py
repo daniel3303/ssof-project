@@ -1,11 +1,14 @@
 #visitor pattern class
 from vulnerabilities import *
 from instructions import *
+import re
 
 class Executer:
 
 	# "Overloading"
 	def visit(self, instruction, context):
+		print(instruction.op)
+
 		if isinstance(instruction, Add):
 			self.executeAdd(instruction, context)
 		elif isinstance(instruction, Call):
@@ -42,51 +45,58 @@ class Executer:
 	# :::::::: execute methods ::::::::::
 
 	def executeAdd(self, instruction, context):
-		print(instruction.op)
-		#value = self.isMemoryPosition(instruction.value) 
-		#		?? context.stack.getElement(hexStringToHex(value)) : instruction.value;
+		if(self.isRegister(instruction.dest, context)):
+			context.registers[instruction.dest] += self.getValue(instruction.value);
+		if(self.isMemoryPosition(instruction.dest)):
+			se = self.getStackElementFromMemoryPosition(instruction.dest)
+			se.content += self.getValue(instruction.value)
+			context.stack.updateElement(se)
 
 	def executeSub(self, instruction, context):
-		print(instruction.op)
+		if(self.isRegister(instruction.dest, context)):
+			context.registers[instruction.dest] -= self.getValue(instruction.value, context);
+		if(self.isMemoryPosition(instruction.dest)):
+			se = self.getStackElementFromMemoryPosition(instruction.dest)
+			se.content -= self.getValue(instruction.value)
+			context.stack.updateElement(se)
 
 	def executeMov(self, instruction, context):
-		print(instruction.op)
+		# if memory position, carefull if it is rbp- or rip-, only use rbp-address, others we just set 0
+		# because prolly not needed
+		return
 
 	def executeCall(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executeCmp(self, instruction, context):
-		print(instruction.op)
+		return
 		
 	def executeJe(self, instruction, context):
-		print(instruction.op)
+		return
 		
 	def executeJmp(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executeJne(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executeLea(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executeLeave(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executeNop(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executePush(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executeRet(self, instruction, context):
-		print(instruction.op)
+		return
 
 	def executeTest(self, instruction, context):
-		print(instruction.op)
-
-	def isMemoryPosition(self, memPos):
-		return isinstance(memPos, basestring) and "WORD PTR" in memPos
+		return
 
 	def getMemoryPositionSize(self, memPos):
 		if(self.isMemoryPosition(memPos)):
@@ -94,6 +104,34 @@ class Executer:
 			if "QWORD" in memPos: return 8
 
 	def hexStringToHex(self, value):
-		return hex(int(value),16)
+		return int(value, 16)
 
-	
+	def getValue(self, value, context):
+		print("Getting value from {}".format(value))
+
+		if self.isRegister(value, context):
+			return context.registers[value]
+
+		if self.isMemoryPosition(value):
+			return self.getStackElementFromMemoryPosition(value).content
+
+		return int(value, 16)
+
+	def isRegister(self, string, context):
+		return string in context.registers
+
+	def isMemoryPosition(self, memPos):
+		return isinstance(memPos, basestring) and "WORD PTR" in memPos
+
+	def isMemoryPositionRelativeToRBP(self, memPos):
+		return isinstance(memPos, basestring) and "[rbp" in memPos
+
+	def getStackElementFromMemoryPosition(self, memPos):
+		if(self.isMemoryPositionRelativeToRBP(value)):
+			inside = value[value.find('[')+1:value.find(']')]
+			if "[rbp-" in value:
+				return context.stack.getElement(inside[inside.find('-')+1:])
+			if "[rbp+" in value:
+				return context.stack.getElement(inside[inside.find('+')+1:])
+		else:
+			return None # ignore memory we can't track
