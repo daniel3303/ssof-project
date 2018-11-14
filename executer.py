@@ -85,8 +85,13 @@ class Executer:
 	def executeTest(self, instruction, context):
 		print(instruction.op)
 
-	def isMemoryPosition(self, value):
-		return isinstance(value, basestring) && "WORD PTR" in value
+	def isMemoryPosition(self, memPos):
+		return isinstance(memPos, basestring) and "WORD PTR" in memPos
+
+	def getMemoryPositionSize(self, memPos):
+		if(self.isMemoryPosition(memPos)):
+			if "DWORD" in memPos: return 4
+			if "QWORD" in memPos: return 8
 
 	def hexStringToHex(self, value):
 		return hex(int(value),16)

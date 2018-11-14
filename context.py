@@ -1,3 +1,5 @@
+from stack import Stack
+
 class Context:
 	def __init__(self):
 		#self.variables = {} vars globais
