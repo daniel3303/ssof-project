@@ -4,3 +4,4 @@ class Variable:
 		self.type = var_type
 		self.size = size
 		self.address = address
+		self.effectiveSize = size # size when simulating input, for example fgets size lower than max size
