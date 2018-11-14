@@ -9,9 +9,12 @@ class VariableFactory:
 class InstructionFactory:   
 
 	def constructFromJson(self, jsonObject):
-		# CORRECTION: USE RSI instead of ESI when ESI is in json, why is it there?
-		if "args" in jsonObject and "dest" in jsonObject["args"] and jsonObject["args"]["dest"] == "esi":
-			jsonObject["args"]["dest"] = "rsi"
+		# CORRECTION: json has errors? using 32 bit registers?
+		if "args" in jsonObject and "dest" in jsonObject["args"]:
+			if jsonObject["args"]["dest"] == "esi":
+				jsonObject["args"]["dest"] = "rsi"
+			if jsonObject["args"]["dest"] == "edx":
+				jsonObject["args"]["dest"] = "rdx"
 
 
 		if(jsonObject["op"] == "add"):

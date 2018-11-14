@@ -67,9 +67,9 @@ class Executer:
 			maxDataSize = int(self.context.registers["rsi"],16)
 			print("fgets max data size {}".format(maxDataSize))
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "fgets", instruction.address)
-			destinationVariableAddress = self.context.registers["rdi"]
-			destinationVariable = self.currentFunction.getVariableByAddress(destinationVariableAddress)
-			destinationVariable.effectiveSize = maxDataSize 
+			destVarAddress = self.context.registers["rdi"]
+			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
+			destVar.effectiveSize = maxDataSize 
 			return
 		if "gets" in instruction.fName:
 			maxDataSize = 9001 # its over 9000
@@ -77,38 +77,60 @@ class Executer:
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "gets", instruction.address)
 			return
 		if "strcpy" in instruction.fName:
-			targetVariableAddress = self.context.registers['rsi']
-			destinationVariable = self.currentFunction.getVariableByAddress(targetVariableAddress)
-			maxDataSize = destinationVariable.size
+			destVarAddress = self.context.registers['rsi']
+			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
+			maxDataSize = destVar.size
 			print("data size {}".format(maxDataSize))
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strcpy", instruction.address)
 			return
 		if "strcat" in instruction.fName:
-			targetVariableAddress = self.context.registers['rsi']
-			destinationVariable = self.currentFunction.getVariableByAddress(targetVariableAddress)
-			sourceVariableAddress = self.context.registers['rdi']
-			sourceVariable = self.currentFunction.getVariableByAddress(sourceVariableAddress)
-			maxDataSize = destinationVariable.effectiveSize + sourceVariable.effectiveSize
+			destVarAddress = self.context.registers['rdi']
+			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
+			sourceVarAddress = self.context.registers['rsi']
+			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
+			maxDataSize = destVar.effectiveSize + sourceVar.effectiveSize # appends \0 at end but first \0 is overwritten
 			print("data size {}".format(maxDataSize))
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strcat", instruction.address)
 			return
+		if "strncpy" in instruction.fName:
+			maxSizeN = int(self.context.registers['rdx'],16)
+			sourceAddr = self.context.registers['rsi']
+			sourceVar = self.currentFunction.getVariableByAddress(sourceAddr)
+			sourceVarSize = sourceVar.effectiveSize
+			destAddr = self.context.registers['rdi']
+			destVar = self.currentFunction.getVariableByAddress(destAddr)
+			maxDataSize = min(maxSizeN, sourceVarSize)
+			print("data size {}".format(maxDataSize))
+			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strncpy", instruction.address)
+			return
+		if "strncat" in instruction.fName:
+			destVarAddress = self.context.registers['rdi']
+			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
+			sourceVarAddress = self.context.registers['rsi']
+			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
+			maxSizeN = int(self.context.registers['rdx'],16)
+			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN) 
+			print("data size {}".format(maxDataSize))
+			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strncat", instruction.address)
+			return
+
 
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		destinationVariable = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
-		print("destinationvariable size {}".format(destinationVariable.size))
-		if(dataSize > destinationVariable.size):
-			endOfOverflowAddress = -int(destinationVariable.address, 16) + dataSize
+		destVar = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
+		print("destVar size {}".format(destVar.size))
+		if(dataSize > destVar.size):
+			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
 			print("end of overflow address = {}".format(endOfOverflowAddress))
 			for variable in self.currentFunction.variables:
-				if variable.name != destinationVariable.name and variable.address > endOfOverflowAddress:
+				if variable.name != destVar.name and variable.address > endOfOverflowAddress:
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname
-						, destinationVariable.name, variable.name)
+						, destVar.name, variable.name)
 					self.context.vulnerabilities.append(vuln1)
 			if endOfOverflowAddress >= 0:
-				vuln2 = RBPOverflow(self.currentFunction.name,faddress, fname, destinationVariable.name)
+				vuln2 = RBPOverflow(self.currentFunction.name,faddress, fname, destVar.name)
 				self.context.vulnerabilities.append(vuln2)
 				if endOfOverflowAddress >= 4:
-					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destinationVariable.name)
+					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destVar.name)
 					self.context.vulnerabilities.append(vuln3)
 
 
