@@ -37,49 +37,57 @@ class Executer:
 	# :::::::: execute methods ::::::::::
 
 	def executeMov(self, instruction):
+		print("executing move source: {} target: {}".format(instruction.value, instruction.dest))
+
 		if self.isRegister(instruction.dest):
 			if self.isRegister(instruction.value):
+				print("both registers")
 				self.context.registers[instruction.dest] = self.context.registers[instruction.value]
+				self.context.printRegisters()
 				return
 			if self.isMemoryPositionRelativeToRBP(instruction.value):
-				self.context.registers[instruction.dest] = self.getAddressFromMemoryPOsitionString(instruction.value)
+				print("mem position")
+				self.context.registers[instruction.dest] = self.getAddressFromMemoryPositionString(instruction.value)
+				self.context.printRegisters()
 				return
 
 			self.context.registers[instruction.dest] = instruction.value
 
 			# check for invalid write access here mov to unwanted position
-			self.context.printRegisters()
 
 		
 	
 	def executeLea(self, instruction):
-		self.context.registers[instruction.dest] = self.getAddressFromMemoryPOsitionString(instruction.value)
+		self.context.registers[instruction.dest] = self.getAddressFromMemoryPositionString(instruction.value)
 		self.context.printRegisters()
 		return
 
 	def executeCall(self, instruction):
-		if instruction.fName == "fgets":
+		print("executing call, instruction name: {}".format(instruction.fName))
+		if "fgets" in instruction.fName:
 			maxDataSize = int(self.context.registers["rsi"])
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "fgets", instruction.address)
-		if instruction.fName == "gets":
-			maxDataSize = float('inf') # unlimited power!
+		if "gets" in instruction.fName:
+			maxDataSize = 9001 # its over 9000
+			print("data size {}".format(maxDataSize))
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "gets", instruction.address)
 
 
-	def classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress):
-		destinationVariable = currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
+	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
+		destinationVariable = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
 		if(dataSize > destinationVariable.size):
-			endOfOverflowAddress = destinationVariable.address + dataSize
+			endOfOverflowAddress = -int(destinationVariable.address, 16) + dataSize
+			print("end of overflow address = {}".format(endOfOverflowAddress))
 			for variable in self.currentFunction.variables:
-				if variable.address > endOfOverflowAddress:
-					vuln1 = VarOverflow(self.currentFunction, faddress, fname
+				if variable.name != destinationVariable.name and variable.address > endOfOverflowAddress:
+					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname
 						, destinationVariable.name, variable.name)
 					self.context.vulnerabilities.append(vuln1)
-			if endOfOverflowAddress < 0:
-				vuln2 = RBPOverflow(self.currentFunction,faddress, fname, destinationVariable.name)
+			if endOfOverflowAddress >= 0:
+				vuln2 = RBPOverflow(self.currentFunction.name,faddress, fname, destinationVariable.name)
 				self.context.vulnerabilities.append(vuln2)
-				if endOfOverflowAddress < -4:
-					vuln3= RetOverflow(self.currentFunction, faddress, fname, destinationVariable.name)
+				if endOfOverflowAddress >= 4:
+					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destinationVariable.name)
 					self.context.vulnerabilities.append(vuln3)
 
 
@@ -143,5 +151,5 @@ class Executer:
 		return isinstance(memPos, basestring) and "[rbp" in memPos
 
 
-	def getAddressFromMemoryPOsitionString(self, memPos):
+	def getAddressFromMemoryPositionString(self, memPos):
 		return memPos[memPos.find('[rbp')+5:memPos.find(']')]

@@ -55,10 +55,11 @@ if __name__ == "__main__":
 	context = parser.parse()
 	context.execute()
 
-	vulnerabilitiesJSON = ""
+	vulnerabilitiesJSON = []
 	for vuln in context.vulnerabilities:
-		vulnerabilitiesJSON += vuln.toJSON()
-	print(vulnerabilitiesJSON)
+		vulnerabilitiesJSON.append(vuln.toJSON())
+
+	print(json.dumps(vulnerabilitiesJSON, indent=4, separators=(',', ': ')))
 
 
 
