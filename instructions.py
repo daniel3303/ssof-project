@@ -4,6 +4,12 @@ class Instruction:
         self.address = address
         self.op = ""
 
+    def execute(self, context):
+        executer(self, context)
+
+    def accept(self, visitor, context):
+        visitor.visit(self, context)
+
 class Add(Instruction):
 
     def __init__(self, address, dest, value):

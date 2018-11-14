@@ -1,3 +1,5 @@
+from executer import Executer
+
 class Function:
     
     def __init__(self, function_name):
@@ -12,4 +14,7 @@ class Function:
         self.variables.append(variable)
 
     def execute(self, context):
-        print(self.name)
+        #add vars
+        executer = Executer()
+        for instruction in self.instructions:
+            instruction.accept(executer, context)

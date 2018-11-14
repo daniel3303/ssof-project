@@ -8,6 +8,7 @@ class Context:
                         "RSI": "", "R8": "", "R9": "", "R10": "",
                         "R11": "", "R12": "", "R13": "", "R14": "",
                         "R15": "", "RBP": "", "RSP": "", "RIP": ""}
+        self.current_function = "main"
 
     def addFunction(self, function):
         self.functions[function.name] = function
