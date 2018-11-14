@@ -66,7 +66,7 @@ class Executer:
 		if "fgets" in instruction.fName:
 			maxDataSize = int(self.context.registers["rsi"],16)
 			print("fgets max data size {}".format(maxDataSize))
-			self.classifyOverflowVulnerability(maxDataSize, "rdi", "fgets", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, "rdi", "fgets", instruction.address)
 			destVarAddress = self.context.registers["rdi"]
 			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize 
@@ -74,14 +74,14 @@ class Executer:
 		if "gets" in instruction.fName:
 			maxDataSize = 9001 # its over 9000
 			print("data size {}".format(maxDataSize))
-			self.classifyOverflowVulnerability(maxDataSize, "rdi", "gets", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, "rdi", "gets", instruction.address)
 			return
 		if "strcpy" in instruction.fName:
 			destVarAddress = self.context.registers['rsi']
 			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
 			maxDataSize = destVar.size
 			print("data size {}".format(maxDataSize))
-			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strcpy", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, "rdi", "strcpy", instruction.address)
 			return
 		if "strcat" in instruction.fName:
 			destVarAddress = self.context.registers['rdi']
@@ -90,7 +90,7 @@ class Executer:
 			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
 			maxDataSize = destVar.effectiveSize + sourceVar.effectiveSize # appends \0 at end but first \0 is overwritten
 			print("data size {}".format(maxDataSize))
-			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strcat", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, "rdi", "strcat", instruction.address)
 			return
 		if "strncpy" in instruction.fName:
 			maxSizeN = int(self.context.registers['rdx'],16)
@@ -101,7 +101,7 @@ class Executer:
 			destVar = self.currentFunction.getVariableByAddress(destAddr)
 			maxDataSize = min(maxSizeN, sourceVarSize)
 			print("data size {}".format(maxDataSize))
-			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strncpy", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, "rdi", "strncpy", instruction.address)
 			return
 		if "strncat" in instruction.fName:
 			destVarAddress = self.context.registers['rdi']
@@ -111,9 +111,15 @@ class Executer:
 			maxSizeN = int(self.context.registers['rdx'],16)
 			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN) 
 			print("data size {}".format(maxDataSize))
-			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strncat", instruction.address)
-			return
+			self.classifyVulnerabilities(maxDataSize, "rdi", "strncat", instruction.address)
+			return	
 
+		# TODO CALL other functions and argument passing
+		# TODO ADVANCED functions here
+	
+	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
+		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
+		self.classifyInvalidAccessVulnerability(dataSize, destinationRegister, fname, faddress)
 
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destVar = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
@@ -127,13 +133,26 @@ class Executer:
 						, destVar.name, variable.name)
 					self.context.vulnerabilities.append(vuln1)
 			if endOfOverflowAddress >= 0:
-				vuln2 = RBPOverflow(self.currentFunction.name,faddress, fname, destVar.name)
+				vuln2 = RBPOverflow(self.currentFunction.name, faddress, fname, destVar.name)
 				self.context.vulnerabilities.append(vuln2)
 				if endOfOverflowAddress >= 4:
 					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destVar.name)
 					self.context.vulnerabilities.append(vuln3)
 
 
+	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
+		destVar = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
+		if dataSize > destVar.size:
+			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
+			overflowRange = [-int(destVar.address, 16), endOfOverflowAddress]
+			unAddr = self.currentFunction.getFirstUnassignedStackAddress()
+			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
+				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, hex(unAddr))
+				self.context.vulnerabilities.append(vuln1)
+
+			if endOfOverflowAddress > 8:
+				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, hex(endOfOverflowAddress))
+				self.context.vulnerabilities.append(vuln2)
 
 
 	def executeLeave(self, instruction):

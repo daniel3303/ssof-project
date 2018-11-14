@@ -1,18 +1,18 @@
 import json
 
 class Vulnerability:
-	def __init__(self, function, address, fnname, overflowingVar):
+	def __init__(self, function, address, fnname, overflowVar):
 		self.function = function
 		self.address = address
 		self.fnname = fnname
-		self.overflowingVar = overflowingVar
+		self.overflowVar = overflowVar
 
 	def toJSON(self):
 		data = {}
 		data['vuln_function'] = self.function
 		data['address'] = self.address
 		data['fnname'] = self.fnname
-		data['overflow_var'] = self.overflowingVar
+		data['overflow_var'] = self.overflowVar
 		return data
 
 class VarOverflow(Vulnerability):
@@ -23,7 +23,7 @@ class VarOverflow(Vulnerability):
 	def toJSON(self):
 		jsonData = Vulnerability.toJSON(self)
 		jsonData['vulnerability'] = 'VAROVERFLOW'
-		jsonData['overflownVar'] = self.overflownVar
+		jsonData['overflown_var'] = self.overflownVar
 		return jsonData
 
 class RBPOverflow(Vulnerability):
@@ -46,25 +46,25 @@ class RetOverflow(Vulnerability):
 	  
 # Advanced
 class InvalidAccess(Vulnerability):
-	def __init__(self, function, address, fnname, overflowingVar, overflownVar):
-		Vulnerability.__init__(self,  function, address, fnname, overflowingVar)
-		self.overflownVar = overflownVar
+	def __init__(self, function, address, fnname, overflowingVar, overflownAddress):
+		Vulnerability.__init__(self,  function, address, fnname, overflownAddress)
+		self.overflownAddress = overflownAddress
 
 	def toJSON(self):
 		jsonData = Vulnerability.toJSON(self)
 		jsonData['vulnerability'] = 'INVALIDACCS'
-		jsonData['overflownVar'] = self.overflownVar
+		jsonData['overflown_address'] = self.overflownAddress
 		return jsonData
 
 class StackCorruption(Vulnerability):
-	def __init__(self, function, address, fnname, overflowingVar, overflownVar):
-		Vulnerability.__init__(self,  function, address, fnname, overflowingVar)
-		self.overflownVar = overflownVar
+	def __init__(self, function, address, fnname, overflowingVar, overflownAddress):
+		Vulnerability.__init__(self,  function, address, fnname, overflownAddress)
+		self.overflownAddress = overflownAddress
 
 	def toJSON(self):
 		jsonData = Vulnerability.toJSON(self)
 		jsonData['vulnerability'] = 'SCORRUPTION'
-		jsonData['overflownVar'] = self.overflownVar
+		jsonData['overflown_address'] = self.overflownAddress
 		return jsonData
 
 
