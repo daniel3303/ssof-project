@@ -50,11 +50,15 @@ if __name__ == "__main__":
 
 	sys.dont_write_bytecode = True
 
-	''' TESTING '''
 	inputFile = sys.argv[1]
 	parser = Parser(inputFile)
 	context = parser.parse()
 	context.execute()
+
+	vulnerabilitiesJSON = ""
+	for vuln in context.vulnerabilities:
+		vulnerabilitiesJSON += vuln.toJSON()
+	print(vulnerabilitiesJSON)
 
 
 

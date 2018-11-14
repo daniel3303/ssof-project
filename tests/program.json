@@ -74,7 +74,7 @@
                 "op": "mov",
                 "pos": 6,
                 "args": {
-                    "dest": "esi",
+                    "dest": "rsi",
                     "value": "0x14"
                 },
                 "address": "4005a3"

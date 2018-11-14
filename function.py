@@ -18,4 +18,8 @@ class Function:
 		for instruction in self.instructions:
 			instruction.accept(Executer(), context)
 
+	def getVariableByAddress(self, address):
+		for var in self.variables:
+			if var.address == address: return var
+
 
