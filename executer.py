@@ -129,9 +129,8 @@ class Executer:
 			endOfOverflowAddress = -int(destVar.address,16) + dataSize
 			print("end of overflow address = {}".format(endOfOverflowAddress))
 			for variable in self.currentFunction.variables:
-				if variable.name != destVar.name and -int(variable.address,16) < endOfOverflowAddress:
-					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname
-						, destVar.name, variable.name)
+				if variable.name != destVar.name and -int(variable.address,16) < endOfOverflowAddress and -int(variable.address,16) > -int(destVar.address,16):
+					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
 					self.context.vulnerabilities.append(vuln1)
 			if endOfOverflowAddress >= 0:
 				vuln2 = RBPOverflow(self.currentFunction.name, faddress, fname, destVar.name)
