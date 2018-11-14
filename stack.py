@@ -43,9 +43,6 @@ class Stack:
 		return True
 
 	def elementsOverlap(self, stackElement1, stackElement2):
-		print("type startaddr1: {}".format(type(stackElement1.startAddr)))
-		print("type endaddr1: {}  endaddr2: {}".format(type(stackElement1.endAddr), type(stackElement2.endAddr)))
-
 		range1 = range(stackElement1.startAddr, stackElement1.endAddr)
 		range2 = range(stackElement2.startAddr, stackElement2.endAddr)
 		

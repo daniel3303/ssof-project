@@ -97,7 +97,7 @@ class Executer:
 		if(self.isRegister(instruction.dest)):
 			self.context.registers[instruction.dest] = loadedValue
 
-		print("Lea loaded value: {}".format(loadedValue))
+		print("Lea loaded value: {}".format(hex(loadedValue.startAddr)))
 		return
 
 	def executeLeave(self, instruction):
