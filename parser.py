@@ -8,7 +8,6 @@ import json
 from function import Function
 from factories import *
 from context import Context
-from stack import Stack
 
 class Parser:
 	def __init__(self, fileName):

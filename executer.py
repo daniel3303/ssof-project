@@ -2,7 +2,6 @@
 from vulnerabilities import *
 from instructions import *
 import re
-from stack import *
 
 class Executer:
 
@@ -10,11 +9,8 @@ class Executer:
 	def visit(self, instruction, context):
 		print(instruction.op)
 		self.context = context
-		self.stack = context.functions[context.current_function].stack
-
-		if isinstance(instruction, Add):
-			self.executeAdd(instruction)
-		elif isinstance(instruction, Call):
+		
+		if isinstance(instruction, Call):
 			self.executeCall(instruction)
 		elif isinstance(instruction, Cmp):
 			self.executeCmp(instruction,)
@@ -32,83 +28,35 @@ class Executer:
 			self.executeMov(instruction)
 		elif isinstance(instruction, Nop):
 			self.executeNop(instruction)
-		elif isinstance(instruction, Push):
-			self.executePush(instruction)
 		elif isinstance(instruction, Ret):
 			self.executeRet(instruction)
-		elif isinstance(instruction, Sub):
-			self.executeSub(instruction)
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction)
-		else:
-			raise Exception("! EXCEPTION: Unknown instruction type visited.")
-			sys.exit()
+
 
 
 	# :::::::: execute methods ::::::::::
 
-	def executeAdd(self, instruction):
-		value = self.getValue(instruction.value);
-
-		if(self.isRegister(instruction.dest)):
-			self.context.registers[instruction.dest] += value
-		if(self.isMemoryPosition(instruction.dest)):
-			if self.stack.elementExists(instruction.dest):
-				se = self.getStackElementFromMemoryPositionString(instruction.dest)
-				se.content += value
-				self.stack.updateElement(se)
-			else:
-				print("Error, trying to Add to non existing stack element")
-				
-
-	def executeSub(self, instruction):
-		value = self.getValue(instruction.value);
-
-		if(self.isRegister(instruction.dest)):
-			self.context.registers[instruction.dest] -= value
-		if(self.isMemoryPosition(instruction.dest)):
-			if self.stack.elementExists(instruction.dest):
-				se = self.getStackElementFromMemoryPositionString(instruction.dest)
-				se.content -= value
-				self.stack.updateElement(se)
-			else:
-				print("Error, trying to Sub to non existing stack element")
-
 	def executeMov(self, instruction):
-		value = self.getValue(instruction.value)
+		if self.isRegister(instruction.dest):
+			if self.isRegister(instruction.value):
+				self.context.registers[instruction.dest] = self.context.registers[instruction.value]
+			if self.isMemoryPositionRelativeToRBP(instruction.value):
+				self.context.registers[instruction.dest] = self.getAddressFromMemoryPOsitionString(instruction.value)
+
+			# check for invalid write access here mov to unwanted position
+			self.context.printRegisters()
+
 		
-		if(self.isRegister(instruction.dest)):
-			self.context.registers[instruction.dest] = value
-		if(self.isMemoryPosition(instruction.dest)):
-			if not self.stack.elementExists(instruction.dest):
-				valueSize = self.getMemoryPositionSize(value)
-				destAddress = int(self.getAddressFromMemoryPositionString(instruction.dest),16)
-				self.stack.addElement(StackElement(destAddress ,valueSize, instruction.value))
-			else:
-				se = self.getStackElementFromMemoryPositionString(instruction.dest)
-				se.content = self.getValue(instruction.value)
-				self.stack.updateElement(se)
-
-
 	
 	def executeLea(self, instruction):
-		loadedValue = self.getStackElementFromMemoryPositionString(instruction.value)
-		
-		if(self.isRegister(instruction.dest)):
-			self.context.registers[instruction.dest] = loadedValue
-
-		print("Lea loaded value: {}".format(hex(loadedValue.startAddr)))
+		self.context.registers[instruction.dest] = self.getAddressFromMemoryPOsitionString(instruction.value)
+		self.context.printRegisters()
 		return
 
 	def executeLeave(self, instruction):
 		return
 
-	def executePush(self, instruction):
-		# special case for rbp , address 0 in stack of the function
-		if instruction.value == "rbp": 
-			stackElement = StackElement(0x0, 4, self.context.registers['rbp'])
-
-		return
 
 	def executeRet(self, instruction):
 		return
@@ -158,10 +106,7 @@ class Executer:
 			return self.context.registers[value]
 
 		if self.isMemoryPosition(value):
-			if(self.isMemoryPositionRelativeToRBP(value)):
-				return self.getStackElementFromMemoryPositionString(value)
-			else:
-				return 0x0	# we ignore anything other than rbp relative positions by just using 0
+			return self.getAddressFromMemoryPOsitionString(value)
 
 		return int(value, 16)
 
@@ -174,15 +119,6 @@ class Executer:
 	def isMemoryPositionRelativeToRBP(self, memPos):
 		return isinstance(memPos, basestring) and "[rbp" in memPos
 
-	def getStackElementFromMemoryPositionString(self, memPos):
-		if(self.isMemoryPositionRelativeToRBP(memPos)):
-			value = self.getAddressFromMemoryPositionString(memPos)
-			if "-" in value:
-				return self.stack.getElement(int(value[value.find('-'):],16))
-			if "+" in value:
-				return self.stack.getElement(int(value[value.find('+'):],16))
-		else:
-			return None
 
-	def getAddressFromMemoryPositionString(self, memPos):
-		return memPos[memPos.find('[rbp')+4:memPos.find(']')]
+	def getAddressFromMemoryPOsitionString(self, memPos):
+		return memPos[memPos.find('[rbp')+5:memPos.find(']')]
