@@ -15,6 +15,8 @@ class InstructionFactory:
 				jsonObject["args"]["dest"] = "rsi"
 			if jsonObject["args"]["dest"] == "edx":
 				jsonObject["args"]["dest"] = "rdx"
+			if jsonObject["args"]["dest"] == "eax":
+				jsonObject["args"]["dest"] = "rax"
 
 
 		if(jsonObject["op"] == "add"):

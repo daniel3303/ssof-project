@@ -77,9 +77,9 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, "rdi", "gets", instruction.address)
 			return
 		if "strcpy" in instruction.fName:
-			destVarAddress = self.context.registers['rsi']
-			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
-			maxDataSize = destVar.size
+			sourceVarAddress = self.context.registers['rsi']
+			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
+			maxDataSize = sourceVar.effectiveSize
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcpy", instruction.address)
 			return
@@ -124,11 +124,12 @@ class Executer:
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destVar = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
 		print("destVar size {}".format(destVar.size))
-		if(dataSize > destVar.size):
-			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
+		print("destVar effective size: {}".format(destVar.effectiveSize))
+		if(dataSize > destVar.effectiveSize):
+			endOfOverflowAddress = -int(destVar.address,16) + dataSize
 			print("end of overflow address = {}".format(endOfOverflowAddress))
 			for variable in self.currentFunction.variables:
-				if variable.name != destVar.name and variable.address > endOfOverflowAddress:
+				if variable.name != destVar.name and -int(variable.address,16) < endOfOverflowAddress:
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname
 						, destVar.name, variable.name)
 					self.context.vulnerabilities.append(vuln1)
