@@ -1,6 +1,7 @@
 class Context:
 	def __init__(self):
 		#self.variables = {} vars globais
+		self.stack = Stack() 
 		self.functions = {}
 		self.vulnerabilities = []
 		self.registers = {"RAX": "",

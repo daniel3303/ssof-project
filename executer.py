@@ -35,13 +35,21 @@ class Executer:
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction, context)
 		else:
-			raise Exception("!!!!! EXCEPTION: Unknown instruction type visited.")
+			raise Exception("! EXCEPTION: Unknown instruction type visited.")
 			sys.exit()
 
 
 	# :::::::: execute methods ::::::::::
 
 	def executeAdd(self, instruction, context):
+		print(instruction.op)
+		#value = self.isMemoryPosition(instruction.value) 
+		#		?? context.stack.getElement(hexStringToHex(value)) : instruction.value;
+
+	def executeSub(self, instruction, context):
+		print(instruction.op)
+
+	def executeMov(self, instruction, context):
 		print(instruction.op)
 
 	def executeCall(self, instruction, context):
@@ -65,9 +73,6 @@ class Executer:
 	def executeLeave(self, instruction, context):
 		print(instruction.op)
 
-	def executeMov(self, instruction, context):
-		print(instruction.op)
-
 	def executeNop(self, instruction, context):
 		print(instruction.op)
 
@@ -77,11 +82,13 @@ class Executer:
 	def executeRet(self, instruction, context):
 		print(instruction.op)
 
-	def executeSub(self, instruction, context):
-		print(instruction.op)
-
 	def executeTest(self, instruction, context):
 		print(instruction.op)
 
+	def isMemoryPosition(self, value):
+		return isinstance(value, basestring) && "WORD PTR" in value
+
+	def hexStringToHex(self, value):
+		return hex(int(value),16)
 
 	
