@@ -32,8 +32,6 @@ class Executer:
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction)
 
-
-
 	# :::::::: execute methods ::::::::::
 
 	def executeMov(self, instruction):
@@ -74,10 +72,19 @@ class Executer:
 			print("data size {}".format(maxDataSize))
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "gets", instruction.address)
 			return
+		if "strcpy" in instruction.fName:
+			self.context.printRegisters()
+			targetVariableAddress = self.context.registers['rsi']
+			destinationVariable = self.currentFunction.getVariableByAddress(targetVariableAddress)
+			maxDataSize = destinationVariable.size
+			print("data size {}".format(maxDataSize))
+			self.classifyOverflowVulnerability(maxDataSize, "rdi", "strcpy", instruction.address)
+			return
 
 
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destinationVariable = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
+		print("destinationvariable size {}".format(destinationVariable.size))
 		if(dataSize > destinationVariable.size):
 			endOfOverflowAddress = -int(destinationVariable.address, 16) + dataSize
 			print("end of overflow address = {}".format(endOfOverflowAddress))

@@ -20,6 +20,7 @@ class Function:
 
 	def getVariableByAddress(self, address):
 		for var in self.variables:
+			print("getVariableByAddress: testing var {} == specified addr {}".format(var.address, address))
 			if var.address == address: return var
 
 
