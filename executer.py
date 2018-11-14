@@ -65,12 +65,15 @@ class Executer:
 	def executeCall(self, instruction):
 		print("executing call, instruction name: {}".format(instruction.fName))
 		if "fgets" in instruction.fName:
-			maxDataSize = int(self.context.registers["rsi"])
+			maxDataSize = int(self.context.registers["rsi"],16)
+			print("fgets max data size {}".format(maxDataSize))
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "fgets", instruction.address)
+			return
 		if "gets" in instruction.fName:
 			maxDataSize = 9001 # its over 9000
 			print("data size {}".format(maxDataSize))
 			self.classifyOverflowVulnerability(maxDataSize, "rdi", "gets", instruction.address)
+			return
 
 
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
