@@ -46,7 +46,7 @@ class Executer:
 
 	def executeAdd(self, instruction, context):
 		if(self.isRegister(instruction.dest, context)):
-			context.registers[instruction.dest] += self.getValue(instruction.value);
+			context.registers[instruction.dest] += self.getValue(instruction.value, context);
 		if(self.isMemoryPosition(instruction.dest)):
 			se = self.getStackElementFromMemoryPosition(instruction.dest)
 			se.content += self.getValue(instruction.value)
@@ -65,8 +65,7 @@ class Executer:
 		# because prolly not needed
 		return
 
-	def executeCall(self, instruction, context):
-		return
+
 
 	def executeCmp(self, instruction, context):
 		return
@@ -96,6 +95,10 @@ class Executer:
 		return
 
 	def executeTest(self, instruction, context):
+		return
+
+	def executeCall(self, instruction, context):
+		## Check danger danger
 		return
 
 	def getMemoryPositionSize(self, memPos):
