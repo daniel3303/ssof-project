@@ -1,9 +1,7 @@
-from stack import Stack
-
 class Context:
 	def __init__(self):
 		#self.variables = {} vars globais
-		self.stack = Stack() 
+		
 		self.functions = {}
 		self.vulnerabilities = []
 		#register values in hex

@@ -37,15 +37,19 @@ class Stack:
 		return self.canAddElementToStack(tempElement)
 
 	def canAddElementToStack(self, stackElement):
-		for el in self.elements:
-			if self.elementsOverlap(el, stackElement): 
+		for key in self.elements:
+			if self.elementsOverlap(self.elements[key], stackElement): 
 				return False
 		return True
 
 	def elementsOverlap(self, stackElement1, stackElement2):
+		print("type startaddr1: {}".format(type(stackElement1.startAddr)))
+		print("type endaddr1: {}  endaddr2: {}".format(type(stackElement1.endAddr), type(stackElement2.endAddr)))
+
 		range1 = range(stackElement1.startAddr, stackElement1.endAddr)
 		range2 = range(stackElement2.startAddr, stackElement2.endAddr)
-		return len(range1.intersection(range2)) > 0 
+		
+		return len(set(range1) & set(range2)) > 0 
 	
 
 class StackElement:
@@ -54,5 +58,4 @@ class StackElement:
 		self.startAddr = startAddr
 		self.size = size
 		self.content = content
-		print(startAddr)
-		self.endAddr = int(startAddr,16)+size
+		self.endAddr = startAddr + size

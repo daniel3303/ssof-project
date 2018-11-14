@@ -10,6 +10,7 @@ class Executer:
 	def visit(self, instruction, context):
 		print(instruction.op)
 		self.context = context
+		self.stack = context.functions[context.current_function].stack
 
 		if isinstance(instruction, Add):
 			self.executeAdd(instruction)
@@ -52,10 +53,10 @@ class Executer:
 		if(self.isRegister(instruction.dest)):
 			self.context.registers[instruction.dest] += value
 		if(self.isMemoryPosition(instruction.dest)):
-			if self.context.stack.elementExists(instruction.dest):
+			if self.stack.elementExists(instruction.dest):
 				se = self.getStackElementFromMemoryPositionString(instruction.dest)
 				se.content += value
-				self.context.stack.updateElement(se)
+				self.stack.updateElement(se)
 			else:
 				print("Error, trying to Add to non existing stack element")
 				
@@ -66,10 +67,10 @@ class Executer:
 		if(self.isRegister(instruction.dest)):
 			self.context.registers[instruction.dest] -= value
 		if(self.isMemoryPosition(instruction.dest)):
-			if self.context.stack.elementExists(instruction.dest):
+			if self.stack.elementExists(instruction.dest):
 				se = self.getStackElementFromMemoryPositionString(instruction.dest)
 				se.content -= value
-				self.context.stack.updateElement(se)
+				self.stack.updateElement(se)
 			else:
 				print("Error, trying to Sub to non existing stack element")
 
@@ -79,17 +80,53 @@ class Executer:
 		if(self.isRegister(instruction.dest)):
 			self.context.registers[instruction.dest] = value
 		if(self.isMemoryPosition(instruction.dest)):
-			if not self.context.stack.elementExists(instruction.dest):
+			if not self.stack.elementExists(instruction.dest):
 				valueSize = self.getMemoryPositionSize(value)
-				destAddress = self.getAddressFromMemoryPositionString(instruction.dest)
-				self.context.stack.addElement(StackElement(destAddress ,valueSize, instruction.value))
+				destAddress = int(self.getAddressFromMemoryPositionString(instruction.dest),16)
+				self.stack.addElement(StackElement(destAddress ,valueSize, instruction.value))
 			else:
 				se = self.getStackElementFromMemoryPositionString(instruction.dest)
 				se.content = self.getValue(instruction.value)
-				self.context.stack.updateElement(se)
+				self.stack.updateElement(se)
 
 
+	
+	def executeLea(self, instruction):
+		loadedValue = self.getStackElementFromMemoryPositionString(instruction.value)
+		
+		if(self.isRegister(instruction.dest)):
+			self.context.registers[instruction.dest] = loadedValue
+
+		print("Lea loaded value: {}".format(loadedValue))
+		return
+
+	def executeLeave(self, instruction):
+		return
+
+	def executePush(self, instruction):
+		# special case for rbp , address 0 in stack of the function
+		if instruction.value == "rbp": 
+			stackElement = StackElement(0x0, 4, self.context.registers['rbp'])
+
+		return
+
+	def executeRet(self, instruction):
+		return
+
+	def executeNop(self, instruction):
+		# empty
+		return
+
+	def executeCall(self, instruction):
+		## Check danger danger
+		return
+
+
+	### Advanced
 	def executeCmp(self, instruction):
+		return
+
+	def executeTest(self, instruction):
 		return
 		
 	def executeJe(self, instruction):
@@ -101,27 +138,8 @@ class Executer:
 	def executeJne(self, instruction):
 		return
 
-	def executeLea(self, instruction):
-		return
+	## end advanced
 
-	def executeLeave(self, instruction):
-		return
-
-	def executeNop(self, instruction):
-		return
-
-	def executePush(self, instruction):
-		return
-
-	def executeRet(self, instruction):
-		return
-
-	def executeTest(self, instruction):
-		return
-
-	def executeCall(self, instruction):
-		## Check danger danger
-		return
 
 	def getMemoryPositionSize(self, memPos):
 		if(self.isMemoryPosition(memPos)):
@@ -157,15 +175,12 @@ class Executer:
 		return isinstance(memPos, basestring) and "[rbp" in memPos
 
 	def getStackElementFromMemoryPositionString(self, memPos):
-		print("Looking in stack for {}".format(memPos))
 		if(self.isMemoryPositionRelativeToRBP(memPos)):
 			value = self.getAddressFromMemoryPositionString(memPos)
 			if "-" in value:
-				se = self.context.stack.getElement(value[value.find('-'):])
-				return se
+				return self.stack.getElement(int(value[value.find('-'):],16))
 			if "+" in value:
-				se = self.context.stack.getElement(value[value.find('+'):])
-				return se
+				return self.stack.getElement(int(value[value.find('+'):],16))
 		else:
 			return None
 
