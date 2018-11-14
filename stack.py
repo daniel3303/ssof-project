@@ -1,26 +1,26 @@
 # Models the known stack
 class Stack:
 	def __init__(self):
-		# key is start addr relative to RBP with minus, ex: 0x4 is RBP-0x4
-		# for RBP+0x4 we have -0x4
+		# key is start addr relative to RBP with minus, ex: -0x4 is RBP-0x4
+		# for RBP+0x4 we have 0x4
 		self.elements = {} 
 
-	def elementExists(key):
+	def elementExists(self, key):
 		return key in self.elements
 
-	def addElement(stackElement):
+	def addElement(self, stackElement):
 		if(self.canAddElementToStack(stackElement)):
-			self.elements[stackElement.startAddr, stackElement]
+			self.elements[stackElement.startAddr] = stackElement;
 
-	def getElement(key):
+	def getElement(self, key):
 		if key in self.elements:
 			return self.elements[key]
 
-	def delElement(key):
+	def delElement(self, key):
 		if key in self.elements:
 			del self.elements[key]
 
-	def updateElement(stackElement):
+	def updateElement(self, stackElement):
 		key = stackElement.startAddr
 		oldElement = self.getElement(key)
 		if key in self.elements:
@@ -32,17 +32,17 @@ class Stack:
 			self.addElement(oldElement);
 			raise Exception('Element does not fit in stack')
 
-	def isAddressIntervalFree(startAddr1, endAddr1):
+	def isAddressIntervalFree(self, startAddr1, endAddr1):
 		tempElement = StackElement(startAddr1, startADdr1-endAddr1, "")
 		return self.canAddElementToStack(tempElement)
 
-	def canAddElementToStack(stackElement):
+	def canAddElementToStack(self, stackElement):
 		for el in self.elements:
 			if self.elementsOverlap(el, stackElement): 
 				return False
 		return True
 
-	def elementsOverlap(stackElement1, stackElement2):
+	def elementsOverlap(self, stackElement1, stackElement2):
 		range1 = range(stackElement1.startAddr, stackElement1.endAddr)
 		range2 = range(stackElement2.startAddr, stackElement2.endAddr)
 		return len(range1.intersection(range2)) > 0 
@@ -54,4 +54,5 @@ class StackElement:
 		self.startAddr = startAddr
 		self.size = size
 		self.content = content
-		self.endAddr = startAddr+hex(size)
+		print(startAddr)
+		self.endAddr = int(startAddr,16)+size
