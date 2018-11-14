@@ -1,83 +1,87 @@
-#Visitor pattern class
+#visitor pattern class
 from vulnerabilities import *
 from instructions import *
 
 class Executer:
 
-    # "Overloading" ʕ ͡° ʖ̯ ͡°ʔ
-    def visit(self, instruction, context):
-        if type(instruction) is Add:
-            self.visitAdd(instruction, context)
-        if type(instruction) is Call:
-            self.visitCall(instruction, context)
-        if type(instruction) is Cmp:
-            self.visitCmp(instruction, context)
-        if type(instruction) is Je:
-            self.visitJe(instruction, context)
-        if type(instruction) is Jmp:
-            self.visitJmp(instruction, context)
-        if type(instruction) is Jne:
-            self.visitJne(instruction, context)
-        if type(instruction) is Lea:
-            self.visitLea(instruction, context)
-        if type(instruction) is Leave:
-            self.visitLeave(instruction, context)
-        if type(instruction) is Mov:
-            self.visitMov(instruction, context)
-        if type(instruction) is Nop:
-            self.visitNop(instruction, context)
-        if type(instruction) is Push:
-            self.visitPush(instruction, context)
-        if type(instruction) is Ret:
-            self.visitRet(instruction, context)
-        if type(instruction) is Sub:
-            self.visitSub(instruction, context)
-        if type(instruction) is Test:
-            self.visitTest(instruction, context)
-
-    # :::::::: Visit methods ::::::::::
-
-    def visitAdd(self, instruction, context):
-        print(instruction.op)
-
-    def visitCall(self, instruction, context):
-        print(instruction.op)
-
-    def visitCmp(self, instruction, context):
-        print(instruction.op)
-        
-    def visitJe(self, instruction, context):
-        print(instruction.op)
-        
-    def visitJmp(self, instruction, context):
-        print(instruction.op)
-
-    def visitJne(self, instruction, context):
-        print(instruction.op)
-
-    def visitLea(self, instruction, context):
-        print(instruction.op)
-
-    def visitLeave(self, instruction, context):
-        print(instruction.op)
-
-    def visitMov(self, instruction, context):
-        print(instruction.op)
-
-    def visitNop(self, instruction, context):
-        print(instruction.op)
-
-    def visitPush(self, instruction, context):
-        print(instruction.op)
-
-    def visitRet(self, instruction, context):
-        print(instruction.op)
-
-    def visitSub(self, instruction, context):
-        print(instruction.op)
-
-    def visitTest(self, instruction, context):
-        print(instruction.op)
+	# "Overloading"
+	def visit(self, instruction, context):
+		if isinstance(instruction, Add):
+			self.executeAdd(instruction, context)
+		elif isinstance(instruction, Call):
+			self.executeCall(instruction, context)
+		elif isinstance(instruction, Cmp):
+			self.executeCmp(instruction, context)
+		elif isinstance(instruction, Je):
+			self.executeJe(instruction, context)
+		elif isinstance(instruction, Jmp):
+			self.executeJmp(instruction, context)
+		elif isinstance(instruction, Jne):
+			self.executeJne(instruction, context)
+		elif isinstance(instruction, Lea):
+			self.executeLea(instruction, context)
+		elif isinstance(instruction, Leave):
+			self.executeLeave(instruction, context)
+		elif isinstance(instruction, Mov):
+			self.executeMov(instruction, context)
+		elif isinstance(instruction, Nop):
+			self.executeNop(instruction, context)
+		elif isinstance(instruction, Push):
+			self.executePush(instruction, context)
+		elif isinstance(instruction, Ret):
+			self.executeRet(instruction, context)
+		elif isinstance(instruction, Sub):
+			self.executeSub(instruction, context)
+		elif isinstance(instruction, Test):
+			self.executeTest(instruction, context)
+		else:
+			raise Exception("!!!!! EXCEPTION: Unknown instruction type visited.")
+			sys.exit()
 
 
-    
+	# :::::::: execute methods ::::::::::
+
+	def executeAdd(self, instruction, context):
+		print(instruction.op)
+
+	def executeCall(self, instruction, context):
+		print(instruction.op)
+
+	def executeCmp(self, instruction, context):
+		print(instruction.op)
+		
+	def executeJe(self, instruction, context):
+		print(instruction.op)
+		
+	def executeJmp(self, instruction, context):
+		print(instruction.op)
+
+	def executeJne(self, instruction, context):
+		print(instruction.op)
+
+	def executeLea(self, instruction, context):
+		print(instruction.op)
+
+	def executeLeave(self, instruction, context):
+		print(instruction.op)
+
+	def executeMov(self, instruction, context):
+		print(instruction.op)
+
+	def executeNop(self, instruction, context):
+		print(instruction.op)
+
+	def executePush(self, instruction, context):
+		print(instruction.op)
+
+	def executeRet(self, instruction, context):
+		print(instruction.op)
+
+	def executeSub(self, instruction, context):
+		print(instruction.op)
+
+	def executeTest(self, instruction, context):
+		print(instruction.op)
+
+
+	
