@@ -37,26 +37,31 @@ class Executer:
 	def executeMov(self, instruction):
 		print("executing move source: {} target: {}".format(instruction.value, instruction.dest))
 
-		if self.isRegister(instruction.dest):
+			# Makes a mov operation where the value to copy is a register
+			if self.context.isRegister(instruction.value):
 
-			#makes a mov operation where the value to copy is a register
-			if self.isRegister(instruction.value):
-				print("both registers")
+				# Get register value
+				value = self.context.getValue(instruction.value)
+				self.context.setValue(instruction.dest, value)
+
+				# Print registers (for debug)
+				self.context.printRegisters()
+
+			# Makes a mov operation where the value to copy is a value on the stack
+			elif self.isMemoryPositionRelativeToRBP(instruction.value):
+
+				# Get position value
+				value = self.context.getValue(instruction.value)
+				self.context.setValue(instruction.dest, value)
+
+				# Print registers (for debug)
+				self.context.printRegisters()
+
+			# Makes a mov operation where the value to copy is a literal
+			else:
 				self.context.setValue(instruction.dest, instruction.value)
-				self.context.printRegisters()
-				return
 
-			#makes a mov operation where the value to copy is a value on the stack
-			if self.isMemoryPositionRelativeToRBP(instruction.value):
-				print("mem position")
-				self.context.registers[instruction.dest] = self.getAddressFromMemoryPositionString(instruction.value)
-				self.context.printRegisters()
-				return
 
-			#makes a mov operation where the value to copy is a literal value
-			self.context.registers[instruction.dest] = instruction.value
-
-			# check for invalid write access here mov to unwanted position
 
 
 
@@ -200,7 +205,7 @@ class Executer:
 		if value == None:
 			return None
 
-		if self.isRegister(value):
+		if self.context.isRegister(value):
 			return self.context.registers[value]
 
 		if self.isMemoryPosition(value):
