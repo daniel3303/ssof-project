@@ -64,14 +64,14 @@ class StackManager:
     def __init__(self):
         self.stacks = []
 
-    def createStack(self, function):
+    def push(self, function):
         self.stacks.append(Stack(function))
         return True
 
 
     # Removes and returns the last element from the stacks lists.
     # @Return None if empty
-    def popStack(self):
+    def pop(self):
         if len(self.stacks) < 1:
             return None
 

@@ -36,11 +36,11 @@ class Context:
 	def getStackManager(self):
 		return self.stackManager
 
-	def createStack(self, function):
-		return self.stackManager.createStack(function)
+	def push(self, function):
+		return self.stackManager.push(function)
 
-	def popStack(self):
-		return self.stackManager.popStack()
+	def pop(self):
+		return self.stackManager.pop()
 
 	def isRegister(self, name):
 		return self.stackManager.isRegister(name)
