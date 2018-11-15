@@ -53,7 +53,7 @@ class Stack:
 
 
     def isStackAddress(self, location):
-    	return isinstance(location, basestring) and "[rbp" in memPos
+    	return isinstance(location, basestring) and "[rbp" in location
 
     def getRBPOffset(self, memPos):
     	return memPos[memPos.find('[rbp')+5:memPos.find(']')]
