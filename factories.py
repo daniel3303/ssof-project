@@ -9,16 +9,11 @@ class VariableFactory:
 class InstructionFactory:   
 
 	def constructFromJson(self, jsonObject):
-		# CORRECTION: json has errors? using 32 bit registers?
+		# for this program we can consider 32 bit registers as 64 bit ones
 		if "args" in jsonObject and "dest" in jsonObject["args"]:
-			if jsonObject["args"]["dest"] == "esi":
-				jsonObject["args"]["dest"] = "rsi"
-			if jsonObject["args"]["dest"] == "edx":
-				jsonObject["args"]["dest"] = "rdx"
-			if jsonObject["args"]["dest"] == "eax":
-				jsonObject["args"]["dest"] = "rax"
-
-
+			if  jsonObject["args"]["dest"][0]=="e":
+				jsonObject["args"]["dest"] = "r" + jsonObject["args"]["dest"][1:]
+					
 		if(jsonObject["op"] == "add"):
 			return Add(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
 		if(jsonObject["op"] == "lea"):
