@@ -42,8 +42,10 @@ class StackManager:
     def __init__(self, function):
         self.stacks = []
 
-    def createStack(self):
-        self.stacks.append(Stack())
+    def createStack(self, function):
+        if not issubclass(function, Function):
+            raise Error("Invalid argument. @param function must be an instace of Function.")
+        self.stacks.append(Stack(function))
         return True
 
 

@@ -16,7 +16,13 @@ class Context:
 						'r10': "0x0", 'rbx': "0x0", 'rdi': "0x0", 'r11': "0x0",
 						'r8': "0x0", 'rdx': "0x0", 'rip': "0x0", 'r9': "0x0",
 						'r12': "0x0", 'rbp': "0x0", 'rsp': "0x0", 'rax': "0x0", 'r13': "0x0" }
+
+		# The starting point
 		self.currentFunction = "main"
+
+
+	def getCurrentFunction(self):
+		return self.functions[self.currentFunction]
 
 	def addFunction(self, function):
 		self.functions[function.name] = function
@@ -37,3 +43,6 @@ class Context:
 
 	def createStack(self):
 		return self.stackManager.createStack()
+
+	def popStack(self):
+		return self.stackManager.popStack()

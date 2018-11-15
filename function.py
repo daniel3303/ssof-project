@@ -1,6 +1,6 @@
 from executer import Executer
 class Function:
-	
+
 	def __init__(self, function_name):
 		self.name = function_name
 		self.instructions = []
@@ -15,8 +15,14 @@ class Function:
 		self.variables.append(variable)
 
 	def execute(self, context):
+		# Create a stack for this function
+		context.createStack(self)
+
 		for instruction in self.instructions:
 			instruction.accept(Executer(), context)
+
+		# Removes the stack created at the beginning of the execution
+		context.popStack()
 
 	def getVariableByAddress(self, address):
 		for var in self.variables:
@@ -30,14 +36,7 @@ class Function:
 			# there exists a var after this one
 			if idx < len(sortedVars)-1:
 				nextAddress = int(var.address,16) + var.size
-				if nextAddress == sortedVars[idx+1].address: 
+				if nextAddress == sortedVars[idx+1].address:
 					continue
 				else:
 					return nextAddress
-
-
-
-
-
-
-

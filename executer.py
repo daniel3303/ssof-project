@@ -9,7 +9,7 @@ class Executer:
 	def visit(self, instruction, context):
 		print(instruction.op)
 		self.context = context
-		self.currentFunction = self.context.functions[self.context.current_function]
+		self.currentFunction = self.context.getCurrentFunction()
 
 		if isinstance(instruction, Call):
 			self.executeCall(instruction)
