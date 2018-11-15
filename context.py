@@ -46,7 +46,7 @@ class Context:
 		return self.stackManager.isRegister(name)
 
 	def setValue(self, leftValue, value):
-		self.context.setValue(leftValue, value)
+		self.stackManager.setValue(leftValue, value)
 
 	def isStackAddress(self, location):
 		return self.stackManager.isStackAddress(location)
