@@ -42,14 +42,12 @@ class Stack:
         return name in self.registers
 
     def setValue(self, location, value):
-        # TODO check if location is in stack bounfs
-
+        # TODO check if location is in stack bounds
         if self.isRegister(location):
-			self.registers[location] = value
+		    self.registers[location] = value
 
         elif self.isStackAddress(location):
             self.values[self.getRBPOffset(location)] = value
-
 
 
     def isStackAddress(self, location):
