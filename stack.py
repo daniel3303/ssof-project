@@ -43,16 +43,16 @@ class Stack:
 
     def setValue(self, location, value):
         #TODO check invalid writes
-        
+
         if self.isRegister(location):
 			self.context.registers[location] = value
 
-        elif self.isStackValue(location):
+        elif self.isStackAddress(location):
             self.values[self.getStackValueAddress(location)] = value
 
 
 
-    def isStackValue(self, location):
+    def isStackAddress(self, location):
     	return isinstance(location, basestring) and "[rbp" in memPos
 
     def getStackValueAddress(self, memPos):
@@ -84,10 +84,10 @@ class StackManager:
 
         return self.stacks[len(self.stacks) - 1]
 
-    def getCurrentStackRegisters(self):
+    def getRegisters(self):
         return self.getCurrentStack().getRegisters()
 
-    def registerExistsInCurrentStack(self, name):
+    def isRegister(self, name):
         return self.getCurrentStack().isRegister(name)
 
     def setValue(self, location, value):

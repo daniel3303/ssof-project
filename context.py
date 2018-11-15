@@ -29,7 +29,7 @@ class Context:
 
 	def printRegisters(self):
 		string = "Registers: "
-		registers = self.stackManager.getCurrentStackRegisters()
+		registers = self.stackManager.getRegisters()
 		for key in registers:
 			print("key:{} value:{}".format(key, registers[key]))
 
@@ -43,6 +43,6 @@ class Context:
 		return self.stackManager.popStack()
 
 	def isRegister(self, name):
-		return self.stackManager.registerExistsInCurrentStack(name)
+		return self.stackManager.isRegister(name)
 
 	def setValue(self, leftValue, value)
