@@ -38,23 +38,28 @@ class Executer:
 		print("executing move source: {} target: {}".format(instruction.value, instruction.dest))
 
 		if self.isRegister(instruction.dest):
+
+			#makes a mov operation where the value to copy is a register
 			if self.isRegister(instruction.value):
 				print("both registers")
 				self.context.registers[instruction.dest] = self.context.registers[instruction.value]
 				self.context.printRegisters()
 				return
+
+			#makes a mov operation where the value to copy is a value on the stack
 			if self.isMemoryPositionRelativeToRBP(instruction.value):
 				print("mem position")
 				self.context.registers[instruction.dest] = self.getAddressFromMemoryPositionString(instruction.value)
 				self.context.printRegisters()
 				return
 
+			#makes a mov operation where the value to copy is a literal value
 			self.context.registers[instruction.dest] = instruction.value
 
 			# check for invalid write access here mov to unwanted position
 
-		
-	
+
+
 	def executeLea(self, instruction):
 		self.context.registers[instruction.dest] = self.getAddressFromMemoryPositionString(instruction.value)
 		self.context.printRegisters()
@@ -69,21 +74,21 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, "rdi", "fgets", instruction.address)
 			destVarAddress = self.context.registers["rdi"]
 			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
-			destVar.effectiveSize = maxDataSize 
+			destVar.effectiveSize = maxDataSize
 			return
-		if "gets" in instruction.fName:
+		elif "gets" in instruction.fName:
 			maxDataSize = 9001 # its over 9000
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "gets", instruction.address)
 			return
-		if "strcpy" in instruction.fName:
+		elif "strcpy" in instruction.fName:
 			sourceVarAddress = self.context.registers['rsi']
 			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcpy", instruction.address)
 			return
-		if "strcat" in instruction.fName:
+		elif "strcat" in instruction.fName:
 			destVarAddress = self.context.registers['rdi']
 			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
 			sourceVarAddress = self.context.registers['rsi']
@@ -92,7 +97,7 @@ class Executer:
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcat", instruction.address)
 			return
-		if "strncpy" in instruction.fName:
+		elif "strncpy" in instruction.fName:
 			maxSizeN = int(self.context.registers['rdx'],16)
 			sourceAddr = self.context.registers['rsi']
 			sourceVar = self.currentFunction.getVariableByAddress(sourceAddr)
@@ -103,20 +108,20 @@ class Executer:
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncpy", instruction.address)
 			return
-		if "strncat" in instruction.fName:
+		elif "strncat" in instruction.fName:
 			destVarAddress = self.context.registers['rdi']
 			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
 			sourceVarAddress = self.context.registers['rsi']
 			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
 			maxSizeN = int(self.context.registers['rdx'],16)
-			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN) 
+			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN)
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncat", instruction.address)
-			return	
+			return
 
 		# TODO CALL other functions and argument passing
 		# TODO ADVANCED functions here
-	
+
 	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
 		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
 		self.classifyInvalidAccessVulnerability(dataSize, destinationRegister, fname, faddress)
@@ -169,10 +174,10 @@ class Executer:
 
 	def executeTest(self, instruction):
 		return
-		
+
 	def executeJe(self, instruction):
 		return
-		
+
 	def executeJmp(self, instruction):
 		return
 
