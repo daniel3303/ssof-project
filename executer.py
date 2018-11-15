@@ -37,29 +37,29 @@ class Executer:
 	def executeMov(self, instruction):
 		print("executing move source: {} target: {}".format(instruction.value, instruction.dest))
 
-			# Makes a mov operation where the value to copy is a register
-			if self.context.isRegister(instruction.value):
+		# Makes a mov operation where the value to copy is a register
+		if self.context.isRegister(instruction.value):
 
-				# Get register value
-				value = self.context.getValue(instruction.value)
-				self.context.setValue(instruction.dest, value)
+			# Get register value
+			value = self.context.getValue(instruction.value)
+			self.context.setValue(instruction.dest, value)
 
-				# Print registers (for debug)
-				self.context.printRegisters()
+			# Print registers (for debug)
+			self.context.printRegisters()
 
 			# Makes a mov operation where the value to copy is a value on the stack
-			elif self.isMemoryPositionRelativeToRBP(instruction.value):
+		elif self.context.isStackAddress(instruction.value):
 
-				# Get position value
-				value = self.context.getValue(instruction.value)
-				self.context.setValue(instruction.dest, value)
+			# Get position value
+			value = self.context.getValue(instruction.value)
+			self.context.setValue(instruction.dest, value)
 
-				# Print registers (for debug)
-				self.context.printRegisters()
+			# Print registers (for debug)
+			self.context.printRegisters()
 
-			# Makes a mov operation where the value to copy is a literal
-			else:
-				self.context.setValue(instruction.dest, instruction.value)
+		# Makes a mov operation where the value to copy is a literal
+		else:
+			self.context.setValue(instruction.dest, instruction.value)
 
 
 
@@ -216,9 +216,6 @@ class Executer:
 
 	def isMemoryPosition(self, memPos):
 		return isinstance(memPos, basestring) and "WORD PTR" in memPos
-
-	def isMemoryPositionRelativeToRBP(self, memPos):
-		return isinstance(memPos, basestring) and "[rbp" in memPos
 
 
 	def getAddressFromMemoryPositionString(self, memPos):

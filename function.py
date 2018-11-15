@@ -16,13 +16,13 @@ class Function:
 
 	def execute(self, context):
 		# Create a stack for this function
-		context.createStack(self)
+		context.push(self)
 
 		for instruction in self.instructions:
 			instruction.accept(Executer(), context)
 
 		# Removes the stack created at the beginning of the execution
-		context.popStack()
+		context.pop()
 
 	def getVariableByAddress(self, address):
 		for var in self.variables:

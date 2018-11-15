@@ -42,21 +42,32 @@ class Stack:
         return name in self.registers
 
     def setValue(self, location, value):
-        #TODO check invalid writes
+        # TODO check if location is in stack bounfs
 
         if self.isRegister(location):
-			self.context.registers[location] = value
+			self.registers[location] = value
 
         elif self.isStackAddress(location):
-            self.values[self.getStackValueAddress(location)] = value
+            self.values[self.getRBPOffset(location)] = value
 
 
 
     def isStackAddress(self, location):
     	return isinstance(location, basestring) and "[rbp" in memPos
 
-    def getStackValueAddress(self, memPos):
+    def getRBPOffset(self, memPos):
     	return memPos[memPos.find('[rbp')+5:memPos.find(']')]
+
+    def getValue(self, location):
+        # TODO check if location is in stack bounfs
+        if(self.isStackAddress(location)):
+            return self.values.get(location, "0") # TODO after initializate variables remove default value
+
+        elif(self.isRegister(location)):
+            return self.registers[location]
+
+        else:
+            raise Error("This should never be executed.")
 
 
 
@@ -92,3 +103,9 @@ class StackManager:
 
     def setValue(self, location, value):
         self.getCurrentStack().setValue(location, value)
+
+    def isStackAddress(self, location):
+        return self.getCurrentStack().isStackAddress(location)
+
+    def getValue(self, location):
+        return self.getCurrentStack().getValue(location)

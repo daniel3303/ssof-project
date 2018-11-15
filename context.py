@@ -45,4 +45,11 @@ class Context:
 	def isRegister(self, name):
 		return self.stackManager.isRegister(name)
 
-	def setValue(self, leftValue, value)
+	def setValue(self, leftValue, value):
+		self.context.setValue(leftValue, value)
+
+	def isStackAddress(self, location):
+		return self.stackManager.isStackAddress(location)
+
+	def getValue(self, location):
+		return self.stackManager.getValue(location)
