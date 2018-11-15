@@ -31,9 +31,15 @@ class Parser:
 			for variable in variables:
 				function.addVariable(self.variableFactory.constructFromJson(variable))
 
-			for instruction in instructions:
-				function.addInstruction(self.instructionFactory.constructFromJson(instruction))
-			
+			# add instructions in order of position 
+			nextInstPos = 0
+			while len(instructions) > 0:
+				for idx, inst in enumerate(instructions):
+					if inst["pos"] == nextInstPos:
+						function.addInstruction(self.instructionFactory.constructFromJson(inst))
+						nextInstPos+=1
+						del instructions[idx]
+
 			context.addFunction(function)
 		return context
 
