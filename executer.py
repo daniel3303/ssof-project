@@ -61,17 +61,12 @@ class Executer:
 		else:
 			self.context.setValue(instruction.dest, instruction.value)
 
-
-
-
-
 	def executeLea(self, instruction):
 		self.context.setValue(instruction.dest, instruction.value) #FIXME is this how lea works?
 		self.context.printRegisters()
 		return
 
-	# TODO clean code
-	def executeCall(self, instruction):
+F	def executeCall(self, instruction):
 		print("executing call, instruction name: {}".format(instruction.fName))
 		if "fgets" in instruction.fName:
 			maxDataSize = int(self.context.getValue("rsi"), 16)
@@ -111,6 +106,7 @@ class Executer:
 			destVar = self.context.getVariableByAddress(destAddr)
 			maxDataSize = min(maxSizeN, sourceVarSize)
 			print("data size {}".format(maxDataSize))
+			destVar.effectiveSize = maxDataSize
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncpy", instruction.address)
 			return
 		elif "strncat" in instruction.fName:
@@ -121,6 +117,7 @@ class Executer:
 			maxSizeN = int(self.context.getValue('rdx'),16)
 			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN)
 			print("data size {}".format(maxDataSize))
+			destVar.effectiveSize = maxDataSize
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncat", instruction.address)
 			return
 
