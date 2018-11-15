@@ -23,7 +23,7 @@ class Variable:
 		self.address = newAddress
 
 	def getAssemblyAddress(self):
-		return self.executionAddress
+		return self.assemblyAddress
 
 	def setAssemblyAddress(self, newAddress):
-		self.executionAddress = newAddress
+		self.assemblyAddress = newAddress

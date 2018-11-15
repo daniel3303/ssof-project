@@ -11,7 +11,6 @@ class Function:
 		self.instructions.append(instruction)
 
 	def addVariable(self, variable):
-		variable.address = variable.address.encode('utf-8')#[4:]
 		self.variables.append(variable)
 
 	def execute(self, context):
