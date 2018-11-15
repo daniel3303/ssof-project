@@ -10,7 +10,7 @@ testPassCtr = 0
 
 for name in inFiles:
 	out += "#### FILE: " + name + "\n"
-	result = os.popen('python parser.py ' + name).read()
+	result = os.popen('python2 parser.py ' + name).read()
 	out += result
 	out += "-------------------------------------------------\n\n"
 

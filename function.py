@@ -15,16 +15,11 @@ class Function:
 
 	def execute(self, context):
 		# Create a stack for this function
-		context.push(self)
-		print("#-- STACK CREATED --#")
-
+		context.pushFrame(self)
 		executer = Executer(context)
 		for instruction in self.instructions:
 			instruction.accept(executer)
-
-		# Removes the stack created at the beginning of the execution
-		context.pop()
-		print("#-- STACK ELIMINATED --#")
+		context.popFrame()
 
 	def getFirstUnassignedStackAddress(self):
 		sortedVars = sorted(self.variables, key=lambda x: x.address)
@@ -39,3 +34,10 @@ class Function:
 
 	def getVariables(self):
 		return self.variables
+
+	def isVariableBaseAddress(self, address):
+		for var in self.variables:
+			if(var.address == address):
+				return True
+		return False
+		

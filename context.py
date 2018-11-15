@@ -2,15 +2,10 @@ from stack import *
 
 class Context:
 	def __init__(self):
-		# TODO move register values to a stack object. The context will
-		# keep a list of all the stacks and will pop one when there is a ret instruction
-		self.stackManager = StackManager()
-
+		self.stack = Stack(self)
 		#self.variables = {} vars globais
-
 		self.functions = {}
 		self.vulnerabilities = []
-
 		# The starting point
 		self.currentFunction = "main"
 
@@ -29,33 +24,34 @@ class Context:
 
 	def printRegisters(self):
 		string = "Registers: "
-		registers = self.stackManager.getRegisters()
+		registers = self.stack.getRegisters()
 		for key in registers:
 			print("key:{} value:{}".format(key, registers[key]))
 
-	def getStackManager(self):
-		return self.stackManager
+	def getstack(self):
+		return self.stack
 
-	def push(self, function):
-		return self.stackManager.push(function)
+	def pushFrame(self, function):
+		return self.stack.pushFrame(function)
 
-	def pop(self):
-		return self.stackManager.pop()
+	def popFrame(self):
+		return self.stack.popFrame()
 
 	def isRegister(self, name):
-		return self.stackManager.isRegister(name)
+		return self.stack.isRegister(name)
 
 	def setValue(self, leftValue, value):
-		self.stackManager.setValue(leftValue, value)
+		self.stack.setValue(leftValue, value)
 
 	def isStackAddress(self, location):
-		return self.stackManager.isStackAddress(location)
+		return self.stack.isRelativeAddress(location)
 
-	def getValue(self, location):
-		return self.stackManager.getValue(location)
-
-	def getVariableByAddress(self, address):
-		return self.stackManager.getVariableByAddress(address)
+	def getValue(self, location, size):
+		return self.stack.getValue(location, size)
 
 	def getVariables(self):
-		return self.stackManager.getVariables()
+		return self.stack.getVariables()
+
+	def getVariableByAddress(self, address):
+		return self.stack.getVariableByAddress(address)
+	

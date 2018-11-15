@@ -29,6 +29,8 @@ class Executer:
 			self.executeLeave(instruction)
 		elif isinstance(instruction, Mov):
 			self.executeMov(instruction)
+		elif isinstance(instruction, Push):
+			self.executePush(instruction)
 		elif isinstance(instruction, Ret):
 			self.executeRet(instruction)
 		elif isinstance(instruction, Test):
@@ -41,35 +43,29 @@ class Executer:
 
 		# Makes a mov operation where the value to copy is a register
 		if self.context.isRegister(instruction.value):
-
-			# Get register value
-			value = self.context.getValue(instruction.value)
+			value = self.context.getValue(instruction.value, 64)
 			self.context.setValue(instruction.dest, value)
 
-			# Print registers (for debug)
-			self.context.printRegisters()
-
-			# Makes a mov operation where the value to copy is a value on the stack
+		# Makes a mov operation where the value to copy is a value on the stack
 		elif self.context.isStackAddress(instruction.value):
-
-			# Get position value
-			value = self.context.getValue(instruction.value)
+			value = self.context.getValue(instruction.value, 64)
 			self.context.setValue(instruction.dest, value)
-
-			# Print registers (for debug)
-			self.context.printRegisters()
 
 		# Makes a mov operation where the value to copy is a literal
 		else:
 			self.context.setValue(instruction.dest, instruction.value)
+
+		# Print registers (for debug)
+		#self.context.printRegisters()
 
 
 
 
 
 	def executeLea(self, instruction):
-		self.context.setValue(instruction.dest, instruction.value) #FIXME is this how lea works?
-		self.context.printRegisters()
+		# the [1:-1] is explained here: https://stackoverflow.com/a/25824111/7126027
+		self.context.setValue(instruction.dest, instruction.value[1:-1]) 
+		#self.context.printRegisters()
 		return
 
 	# TODO clean code
@@ -84,7 +80,7 @@ class Executer:
 			destVar.effectiveSize = maxDataSize
 			return
 		elif "gets" in instruction.fName:
-			maxDataSize = 9001 # its over 9000 FIXME?
+			maxDataSize = float("inf") 
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "gets", instruction.address)
 			return
@@ -129,48 +125,11 @@ class Executer:
 		# TODO CALL other functions and argument passing
 		# TODO ADVANCED functions here
 
-	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
-		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
-		self.classifyInvalidAccessVulnerability(dataSize, destinationRegister, fname, faddress)
-
-	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
-		print("destvar: "+str(destVar))
-		print("destVar size {}".format(destVar.size))
-		print("destVar effective size: {}".format(destVar.effectiveSize))
-		if(dataSize > destVar.effectiveSize):
-			endOfOverflowAddress = -int(destVar.address,16) + dataSize
-			print("end of overflow address = {}".format(endOfOverflowAddress))
-			for variable in self.context.getVariables():
-				if variable.name != destVar.name and -int(variable.address,16) < endOfOverflowAddress and -int(variable.address,16) > -int(destVar.address,16):
-					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
-					self.context.vulnerabilities.append(vuln1)
-			if endOfOverflowAddress >= 0:
-				vuln2 = RBPOverflow(self.currentFunction.name, faddress, fname, destVar.name)
-				self.context.vulnerabilities.append(vuln2)
-				if endOfOverflowAddress >= 4:
-					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destVar.name)
-					self.context.vulnerabilities.append(vuln3)
-
-
-	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
-		if dataSize > destVar.size:
-			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
-			overflowRange = [-int(destVar.address, 16), endOfOverflowAddress]
-			unAddr = self.currentFunction.getFirstUnassignedStackAddress()
-			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
-				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, hex(unAddr))
-				self.context.vulnerabilities.append(vuln1)
-
-			if endOfOverflowAddress > 8:
-				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, hex(endOfOverflowAddress))
-				self.context.vulnerabilities.append(vuln2)
-
-
 	def executeLeave(self, instruction):
 		return
 
+	def executePush(self, instruction):
+		return
 
 	def executeRet(self, instruction):
 		return
@@ -209,5 +168,40 @@ class Executer:
 		return isinstance(memPos, basestring) and "WORD PTR" in memPos
 
 
-	def getAddressFromMemoryPositionString(self, memPos):
-		return memPos[memPos.find('[rbp')+5:memPos.find(']')]
+
+#::::::::::::::: Generate vulnerabilities :::::::::::::::
+
+def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
+		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
+		self.classifyInvalidAccessVulnerability(dataSize, destinationRegister, fname, faddress)
+
+	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
+		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister, 64))
+		if(destVar and dataSize > destVar.effectiveSize):
+			endOfOverflowAddress = -int(destVar.address,16) + dataSize
+			print("end of overflow address = {}".format(endOfOverflowAddress))
+			for variable in self.context.getVariables():
+				if variable.name != destVar.name and -int(variable.address,16) < endOfOverflowAddress and -int(variable.address,16) > -int(destVar.address,16):
+					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
+					self.context.vulnerabilities.append(vuln1)
+			if endOfOverflowAddress >= 0:
+				vuln2 = RBPOverflow(self.currentFunction.name, faddress, fname, destVar.name)
+				self.context.vulnerabilities.append(vuln2)
+				if endOfOverflowAddress >= 4:
+					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destVar.name)
+					self.context.vulnerabilities.append(vuln3)
+
+
+	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
+		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister, 64))
+		if(destVar and dataSize > destVar.size):
+			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
+			overflowRange = [-int(destVar.address, 16), endOfOverflowAddress]
+			unAddr = self.currentFunction.getFirstUnassignedStackAddress()
+			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
+				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, hex(unAddr))
+				self.context.vulnerabilities.append(vuln1)
+
+			if endOfOverflowAddress > 8:
+				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, hex(endOfOverflowAddress))
+				self.context.vulnerabilities.append(vuln2)
