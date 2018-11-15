@@ -154,7 +154,7 @@ class Executer:
 			formatString = self.context.getValue('rsi')
 			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
 			maxDataSize = 0
-			for i in range(formatInputCount):
+			for i in range(2, formatInputCount): # skip destination and format string
 				registerName = self.argRegisterPassOrder[i]
 				variableAddress = self.context.getValue(registerName)
 				variable = self.context.getVariableByAddress(variableAddress)
@@ -162,11 +162,20 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, "rdi", "sprintf", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
+		elif "scanf" in instruction.fName:
+			formatString = self.context.getValue('rdi')
+			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			for i in range(1,formatInputCount): # skip format string
+				registerName = self.argRegisterPassOrder[i]
+				destVarAddress = self.context.getValue(registerName)
+				destVar = self.context.getVariableByAddress(destVarAddress)
+				dataSize = float(inf)
+				self.classifyVulnerabilities(dataSize, registerName, "scanf", instruction.address)
+				destVar.effectiveSize = float(inf)
+			return
 
 
 
-
-		# TODO check appending \0 on each of the basic functions
 		# TODO CALL other functions and argument passing
 		# consider direct access like a[10] = 20
 
