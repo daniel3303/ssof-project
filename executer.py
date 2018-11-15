@@ -5,10 +5,12 @@ import re
 
 class Executer:
 
-	# "Overloading"
-	def visit(self, instruction, context):
-		print("#-- EXECUTING OPERATION: "+str(instruction.op)+" --#")
+	def __init__(self, context):
 		self.context = context
+		
+	# "Overloading"
+	def visit(self, instruction):
+		print("#-- EXECUTING OPERATION: "+str(instruction.op)+" --#")
 		self.currentFunction = self.context.getCurrentFunction()
 
 		if isinstance(instruction, Call):

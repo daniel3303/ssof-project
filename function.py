@@ -18,8 +18,9 @@ class Function:
 		context.push(self)
 		print("#-- STACK CREATED --#")
 
+		executer = Executer(context)
 		for instruction in self.instructions:
-			instruction.accept(Executer(), context)
+			instruction.accept(executer)
 
 		# Removes the stack created at the beginning of the execution
 		context.pop()
