@@ -29,7 +29,7 @@ class Context:
 
 	def printRegisters(self):
 		string = "Registers: "
-		for key in self.registers:
+		for key in self.stackManager.getCurrentStackRegisters():
 			print("key:{} value:{}".format(key, self.registers[key]))
 
 	def getStackManager(self):

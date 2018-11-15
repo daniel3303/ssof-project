@@ -8,9 +8,34 @@ class Stack:
         if(!issubclass(function, Function)):
             raise Error("Invalid argument type.")
 
+        # x86 arquicteture register.
+        # By default all start with value 0
+		self.registers = {
+            'r14': "0x0",
+            'r15': "0x0",
+            'rcx': "0x0",
+            'rsi': "0x0",
+            'r10': "0x0",
+            'rbx': "0x0",
+            'rdi': "0x0",
+            'r11': "0x0",
+			'r8' : "0x0",
+            'rdx': "0x0",
+            'rip': "0x0",
+            'r9' : "0x0",
+	        'r12': "0x0",
+            'rbp': "0x0",
+            'rsp': "0x0",
+            'rax': "0x0",
+            'r13': "0x0"
+        }
+
 
     def getFunction(self):
         return self.function
+
+    def getRegisters(self):
+        return self.registers
 
 
 class StackManager:
@@ -29,3 +54,13 @@ class StackManager:
             return None
 
         return self.stacks.pop()
+
+    # @Return Stack or None if empty
+    def getCurrentStack():
+        if len(self.stacks) < 1:
+            return None
+
+        return self.stacks[len(self.stacks - 1)]
+
+    def getCurrentStackRegisters(self):
+        return self.getCurrentStack().getRegisters()
