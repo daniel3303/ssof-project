@@ -7,6 +7,8 @@ class Executer:
 
 	def __init__(self, context):
 		self.context = context
+		# helper array containing the order of how arguments are passed to functions in 64 bits
+		self.argRegisterPassOrder = ['rdi','rsi','rdx','rcx','r8','r9']
 		
 	# "Overloading"
 	def visit(self, instruction):
@@ -43,12 +45,12 @@ class Executer:
 
 		# Makes a mov operation where the value to copy is a register
 		if self.context.isRegister(instruction.value):
-			value = self.context.getValue(instruction.value, 64)
+			value = self.context.getValue(instruction.value)
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a value on the stack
 		elif self.context.isStackAddress(instruction.value):
-			value = self.context.getValue(instruction.value, 64)
+			value = self.context.getValue(instruction.value)
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a literal
@@ -63,63 +65,121 @@ class Executer:
 
 
 	def executeLea(self, instruction):
-		# the [1:-1] is explained here: https://stackoverflow.com/a/25824111/7126027
+		# the [1:-1] removes brackets
+		# because lea is an exception to bracket semantics: https://stackoverflow.com/a/25824111/7126027
 		self.context.setValue(instruction.dest, instruction.value[1:-1]) 
-		#self.context.printRegisters()
 		return
 
-	# TODO clean code
 	def executeCall(self, instruction):
 		print("executing call, instruction name: {}".format(instruction.fName))
-		if "fgets" in instruction.fName:
-			maxDataSize = int(self.context.getValue("rsi"), 16)
+		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
+		if "fgets" in instruction.fName: 
+			maxDataSize = int(self.getFunctionArgumentByIndex(1), 16)
 			print("fgets max data size {}".format(maxDataSize))
-			self.classifyVulnerabilities(maxDataSize, "rdi", "fgets", instruction.address)
-			destVarAddress = self.context.getValue("rdi")
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "fgets", instruction.address)
+			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize
 			return
 		elif "gets" in instruction.fName:
-			maxDataSize = float("inf") 
+			maxDataSize = float("inf")
 			print("data size {}".format(maxDataSize))
-			self.classifyVulnerabilities(maxDataSize, "rdi", "gets", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "gets", instruction.address)
 			return
 		elif "strcpy" in instruction.fName:
-			sourceVarAddress = self.context.getValue('rsi')
+			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize
 			print("data size {}".format(maxDataSize))
-			self.classifyVulnerabilities(maxDataSize, "rdi", "strcpy", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcpy", instruction.address)
+			destVar.effectiveSize = maxDataSize
 			return
-		elif "strcat" in instruction.fName:
-			destVarAddress = self.context.getValue('rdi')
+		# the nullterminator of destination is overwriten by the first character of source, and the null terminator is appended at the end, so final size is sum of lens
+		elif "strcat" in instruction.fName: 
+			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
-			sourceVarAddress = self.context.getValue('rsi')
+			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = destVar.effectiveSize + sourceVar.effectiveSize # appends \0 at end but first \0 is overwritten
 			print("data size {}".format(maxDataSize))
-			self.classifyVulnerabilities(maxDataSize, "rdi", "strcat", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcat", instruction.address)
+			destVar.effectiveSize = maxDataSize
 			return
+		
 		elif "strncpy" in instruction.fName:
-			maxSizeN = int(self.context.getValue('rdx'),16)
-			sourceAddr = self.context.getValue('rsi')
+			maxSizeN = int(self.getFunctionArgumentByIndex(2),16)
+			sourceAddr = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceAddr)
 			sourceVarSize = sourceVar.effectiveSize
-			destAddr = self.context.getValue('rdi')
+			destAddr = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destAddr)
 			maxDataSize = min(maxSizeN, sourceVarSize)
 			print("data size {}".format(maxDataSize))
-			self.classifyVulnerabilities(maxDataSize, "rdi", "strncpy", instruction.address)
+			destVar.effectiveSize = maxDataSize
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strncpy", instruction.address)
+			destVar.effectiveSize = maxDataSize
 			return
+		
 		elif "strncat" in instruction.fName:
-			destVarAddress = self.context.getValue('rdi')
+			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
-			sourceVarAddress = self.context.getValue('rsi')
+			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
-			maxSizeN = int(self.context.getValue('rdx'),16)
+			maxSizeN = int(self.getFunctionArgumentByIndex(2),16)
 			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN)
 			print("data size {}".format(maxDataSize))
-			self.classifyVulnerabilities(maxDataSize, "rdi", "strncat", instruction.address)
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strncat", instruction.address)
+			destVar.effectiveSize = maxDataSize
+			return
+
+		##### advanced
+
+		# TODO test read is working 
+		elif "read" in instruction.fName:
+			destVarAddress = self.getFunctionArgumentByIndex(0)
+			destVar = self.context.getVariableByAddress(destVarAddress)
+			maxDataSize = int(self.getFunctionArgumentByIndex(1),16)
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "read", instruction.address)
+			destVar.effectiveSize = maxDataSize
+			return
+
+		elif "sprintf" in instruction.fName:
+			# count % in format string, so we know which registers to check
+			# TODO rsi register contains the format string and get value should return the format string
+			# TODO do we consider strings only? -> %s  or consider %d , and ...
+			destVarAddress = self.getFunctionArgumentByIndex(0)
+			destVar = self.context.getVariableByAddress(destVarAddress)
+			formatString = self.getFunctionArgumentByIndex(1)
+			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			maxDataSize = 0
+			for i in range(2, formatInputCount): # skip destination and format string
+				variableAddress = self.getFunctionArgumentByIndex(i)
+				variable = self.context.getVariableByAddress(variableAddress)
+				maxDataSize += variable.effectiveSize
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "sprintf", instruction.address)
+			destVar.effectiveSize = maxDataSize
+			return
+		
+		elif "_scanf" in instruction.fName:
+			formatString = self.getFunctionArgumentByIndex(0)
+			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			for i in range(1,formatInputCount): # skip format string
+				variableAddress = self.getFunctionArgumentByIndex(i)
+				destVar = self.context.getVariableByAddress(destVarAddress)
+				dataSize = float(inf)
+				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "scanf", instruction.address)
+				destVar.effectiveSize = float(inf)
+			return
+
+		elif "fscanf" in instruction.fName:
+			formatString = self.getFunctionArgumentByIndex(1)
+			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			for i in range(2,formatInputCount): # skip file register and format string
+				variableAddress = self.getFunctionArgumentByIndex(i)
+				destVar = self.context.getVariableByAddress(destVarAddress)
+				dataSize = float(inf) # file can contain "infinite" data
+				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "fscanf", instruction.address)
+				destVar.effectiveSize = float(inf)
 			return
 
 		# TODO CALL other functions and argument passing
@@ -167,21 +227,34 @@ class Executer:
 	def isMemoryPosition(self, memPos):
 		return isinstance(memPos, basestring) and "WORD PTR" in memPos
 
+		# TODO CALL other functions and argument passing
+		# consider direct access like a[10] = 20
+
+	def countFormatStringInputsFromFormatString(self, formatString):
+		# TODO make sure formatString is a string type from where you get it!
+		if isinstance(formatString , basestring):
+			registerCount = formatString.count('%s') 
+
+	def getFunctionArgumentByIndex(self, index):
+		return self.context.getValue(self.argRegisterPassOrder[index])
+
+	def getRegisterNameByArgIndex(self, index):
+		return self.argRegisterPassOrder[index]
 
 
 #::::::::::::::: Generate vulnerabilities :::::::::::::::
 
-def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
+	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
 		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
 		self.classifyInvalidAccessVulnerability(dataSize, destinationRegister, fname, faddress)
 
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister, 64))
-		if(destVar and dataSize > destVar.effectiveSize):
-			endOfOverflowAddress = -int(destVar.address,16) + dataSize
+		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
+		if(dataSize > destVar.size): # TODO, check if works, changed from destVar.effectiveSize to destVar.size
+			endOfOverflowAddress = int(destVar.address,16) + dataSize
 			print("end of overflow address = {}".format(endOfOverflowAddress))
 			for variable in self.context.getVariables():
-				if variable.name != destVar.name and -int(variable.address,16) < endOfOverflowAddress and -int(variable.address,16) > -int(destVar.address,16):
+				if variable.name != destVar.name and int(variable.address,16) < endOfOverflowAddress and int(variable.address,16) > int(destVar.address,16):
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
 					self.context.vulnerabilities.append(vuln1)
 			if endOfOverflowAddress >= 0:
@@ -193,15 +266,20 @@ def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress
 
 
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister, 64))
-		if(destVar and dataSize > destVar.size):
+		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
+		if dataSize > destVar.size:
 			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
 			overflowRange = [-int(destVar.address, 16), endOfOverflowAddress]
-			unAddr = self.currentFunction.getFirstUnassignedStackAddress()
+			print("overflowrange: {}".format(overflowRange))
+			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0]) 
+			print("unassigned address first {}".format(unAddr))
 			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
-				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, hex(unAddr))
+				outAddressRelativeToRbp = "rbp"+hex(unAddr) if unAddr < 0 else "rbp+"+hex(unAddr)
+				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
 				self.context.vulnerabilities.append(vuln1)
 
-			if endOfOverflowAddress > 8:
-				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, hex(endOfOverflowAddress))
+			if endOfOverflowAddress >= 16: # if writes over 0x10
+				print("scorruption endOfOverflowAddress : {}".format(endOfOverflowAddress))
+				# TODO , finding this address of SCORRUPTION maybe with the stack?
+				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, "rbp+"+"0x10")
 				self.context.vulnerabilities.append(vuln2)

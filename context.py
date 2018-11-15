@@ -46,11 +46,11 @@ class Context:
 	def isStackAddress(self, location):
 		return self.stack.isRelativeAddress(location)
 
-	def getValue(self, location, size):
-		return self.stack.getValue(location, size)
+	def getValue(self, location):
+		return self.stack.getValue(location)
 
 	def getVariables(self):
-		return self.stack.getVariables()
+		return self.stack.getCurrentFrame().getVariables()
 
 	def getVariableByAddress(self, address):
 		return self.stack.getVariableByAddress(address)

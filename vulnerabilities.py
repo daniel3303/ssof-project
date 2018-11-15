@@ -47,7 +47,7 @@ class RetOverflow(Vulnerability):
 # Advanced
 class InvalidAccess(Vulnerability):
 	def __init__(self, function, address, fnname, overflowingVar, overflownAddress):
-		Vulnerability.__init__(self,  function, address, fnname, overflownAddress)
+		Vulnerability.__init__(self,  function, address, fnname, overflowingVar)
 		self.overflownAddress = overflownAddress
 
 	def toJSON(self):
@@ -58,7 +58,7 @@ class InvalidAccess(Vulnerability):
 
 class StackCorruption(Vulnerability):
 	def __init__(self, function, address, fnname, overflowingVar, overflownAddress):
-		Vulnerability.__init__(self,  function, address, fnname, overflownAddress)
+		Vulnerability.__init__(self,  function, address, fnname, overflowingVar)
 		self.overflownAddress = overflownAddress
 
 	def toJSON(self):

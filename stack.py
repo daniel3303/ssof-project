@@ -42,6 +42,8 @@ class Stack:
 		value = self.processAssemblyLiteral(value)
 		if self.isRegister(location):
 			self.registers[location] = value
+			if(location == "rbp"):
+				self.getCurrentFrame().updateVarsAddress(value)
 		elif self.isRelativeAddress(location):
 			self.getCurrentFrame().setValue(location, value)
 		#* TODO: endereco absoluto. op do tipo mov :
@@ -66,9 +68,9 @@ class Stack:
 	def getRBPOffset(self, memPos):
 		return memPos[memPos.find('[rbp')+5:memPos.find(']')]
 
-	def getValue(self, location, size):
+	def getValue(self, location):
 		if(self.isRelativeAddress(location)):
-			return self.getCurrentFrame().getValue(location, size)
+			return self.getCurrentFrame().getValue(location)
 		elif(self.isRegister(location)):
 			return self.registers[location]
 
@@ -115,17 +117,17 @@ class Frame:
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
 		for var in self.function.variables:
-			if address >= var.getAddress() and address < var.getAddress() + var.getSize():
+			if address >= var.getAssemblyAddress() and address < var.getAssemblyAddress() + var.getSize():
 				print(var.name)
 				return var
 
 	def getVariables(self):
 		return self.function.variables
 
-	def getValue(self, location, size):
+	def getValue(self, location):
 		#TODO: get value at location, then next var, etc
 		if(self.function.isVariableBaseAddress(location)):
-			return self.getVariableByAddress(location).getValue(size)
+			return self.getVariableByAddress(location).getValue()
 
 	def setValue(self, address, value):
 		if(self.function.isVariableBaseAddress(address)):
@@ -133,3 +135,6 @@ class Frame:
 		else:
 			'''TODO adicionar logica para tratar casos em que posicao relativa nao coincide com variavel'''
 			return
+
+	def updateVarsAddress(self, newRBP):
+		self.function.updateVarsAddress(newRBP)
