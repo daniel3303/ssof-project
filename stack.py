@@ -141,7 +141,9 @@ class StackManager:
 
         popped =  self.stacks.pop()
 
-        self.getCurrentStack().setRegisters(popped.getRegisters())
+        # Update the registers on the new currentStack (actually not needed)
+        if self.getCurrentStack() is not None:
+            self.getCurrentStack().setRegisters(popped.getRegisters())
         return popped
 
     # @Return Stack or None if empty
