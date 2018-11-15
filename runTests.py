@@ -6,7 +6,7 @@ import glob
 path = 'tests/*.json'
 inFiles = [name for name in glob.glob(path) if 'output' not in os.path.basename(name)]
 out = ""
-testPassCtr = 0;
+testPassCtr = 0
 
 for name in inFiles:
 	out += "#### FILE: " + name + "\n"
@@ -28,4 +28,3 @@ file = open('TEST_OUTPUT.txt', 'w')
 file.write(out)
 
 print(testPassCtr + "/" + len(inFiles) + " tests passed")
-

@@ -1,16 +1,16 @@
-#Stack class
+from function import *
 
 class Stack:
     def __init__(self, function):
         self.function = function
 
         #Checks if the function argument is from type Function
-        if(!issubclass(function, Function)):
+        if not issubclass(function, Function):
             raise Error("Invalid argument type.")
 
         # x86 arquicteture register.
         # By default all start with value 0
-		self.registers = {
+        self.registers = {
             'r14': "0x0",
             'r15': "0x0",
             'rcx': "0x0",
