@@ -7,8 +7,8 @@ class Instruction:
 	def execute(self, context):
 		executer(self, context)
 
-	def accept(self, visitor, context):
-		visitor.visit(self, context)
+	def accept(self, visitor):
+		visitor.visit(self)
 
 class Add(Instruction):
 

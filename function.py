@@ -15,8 +15,9 @@ class Function:
 		self.variables.append(variable)
 
 	def execute(self, context):
+		executer = Executer(context)
 		for instruction in self.instructions:
-			instruction.accept(Executer(), context)
+			instruction.accept(executer)
 
 	def getVariableByAddress(self, address):
 		for var in self.variables:
