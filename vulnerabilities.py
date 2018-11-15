@@ -1,18 +1,18 @@
 import json
 
 class Vulnerability:
-	def __init__(self, function, address, fnname, overflowVar):
+	def __init__(self, function, address, fnname, overflowAddr):
 		self.function = function
 		self.address = address
 		self.fnname = fnname
-		self.overflowVar = overflowVar
+		self.overflowAddr = overflowAddr
 
 	def toJSON(self):
 		data = {}
 		data['vuln_function'] = self.function
 		data['address'] = self.address
 		data['fnname'] = self.fnname
-		data['overflow_var'] = self.overflowVar
+		data['overflow_address'] = self.overflowAddr
 		return data
 
 class VarOverflow(Vulnerability):
