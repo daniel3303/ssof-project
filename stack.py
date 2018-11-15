@@ -11,3 +11,8 @@ class Stack:
 
     def getFunction(self):
         return self.function
+
+
+class StackManager:
+    def __init__(self, function):
+        self.stacks = []
