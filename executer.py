@@ -7,6 +7,9 @@ class Executer:
 
 	def __init__(self, context):
 		self.context = context
+		# helper array containing the order of how arguments are passed to functions in 64 bits
+		self.argRegisterPassOrder = ['rdi','rsi','rdx','rcx','r8','r9']
+
 
 	# "Overloading"
 	def visit(self, instruction, context):
@@ -91,6 +94,7 @@ class Executer:
 			maxDataSize = sourceVar.effectiveSize
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcpy", instruction.address)
+			destVar.effectiveSize = maxDataSize
 			return
 		# the nullterminator of destination is overwriten by the first character of source, and the null terminator is appended at the end, so final size is sum of lens
 		elif "strcat" in instruction.fName: 
@@ -101,7 +105,9 @@ class Executer:
 			maxDataSize = destVar.effectiveSize + sourceVar.effectiveSize # appends \0 at end but first \0 is overwritten
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcat", instruction.address)
+			destVar.effectiveSize = maxDataSize
 			return
+		
 		elif "strncpy" in instruction.fName:
 			maxSizeN = int(self.context.getValue('rdx'),16)
 			sourceAddr = self.context.getValue('rsi')
@@ -113,7 +119,9 @@ class Executer:
 			print("data size {}".format(maxDataSize))
 			destVar.effectiveSize = maxDataSize
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncpy", instruction.address)
+			destVar.effectiveSize = maxDataSize
 			return
+		
 		elif "strncat" in instruction.fName:
 			destVarAddress = self.context.getValue('rdi')
 			destVar = self.context.getVariableByAddress(destVarAddress)
@@ -122,8 +130,8 @@ class Executer:
 			maxSizeN = int(self.context.getValue('rdx'),16)
 			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN)
 			print("data size {}".format(maxDataSize))
-			destVar.effectiveSize = maxDataSize
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncat", instruction.address)
+			destVar.effectiveSize = maxDataSize
 			return
 
 		##### advanced
@@ -132,13 +140,41 @@ class Executer:
 		elif "read" in instruction.fName:
 			destVarAddress = self.context.getValue('rdi')
 			destVar = self.context.getVariableByAddress(destVarAddress)
-			maxSizeN = int(self.context.getValue('rsi'),16)
-			destVar.effectiveSize = maxSizeN
-			self.classifyVulnerabilities(maxSizeN, "rdi", "read", instruction.address)
+			maxDataSize = int(self.context.getValue('rsi'),16)
+			self.classifyVulnerabilities(maxDataSize, "rdi", "read", instruction.address)
+			destVar.effectiveSize = maxDataSize
+			return
+
+		elif "sprintf" in instruction.fName:
+			# count % in format string, so we know which registers to check
+			# TODO rsi register contains the format string and get value should return the format string
+			# TODO do we consider strings only? -> %s  or consider %d , and ...
+			destVarAddress = self.context.getValue('rdi')
+			destVar = self.context.getVariableByAddress(destVarAddress)
+			formatString = self.context.getValue('rsi')
+			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			maxDataSize = 0
+			for i in range(formatInputCount):
+				registerName = self.argRegisterPassOrder[i]
+				variableAddress = self.context.getValue(registerName)
+				variable = self.context.getVariableByAddress(variableAddress)
+				maxDataSize += variable.effectiveSize
+			self.classifyVulnerabilities(maxDataSize, "rdi", "sprintf", instruction.address)
+			destVar.effectiveSize = maxDataSize
+			return
+
+
+
 
 		# TODO check appending \0 on each of the basic functions
 		# TODO CALL other functions and argument passing
 		# consider direct access like a[10] = 20
+
+	def countFormatStringInputsFromFormatString(self, formatString):
+		# TODO make sure formatString is a string type from where you get it!
+		if isinstance(formatString , basestring):
+			registerCount = formatString.count('%s') 
+
 
 	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
 		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
@@ -149,7 +185,7 @@ class Executer:
 		print("destvar: "+str(destVar))
 		print("destVar size {}".format(destVar.size))
 		print("destVar effective size: {}".format(destVar.effectiveSize))
-		if(dataSize > destVar.effectiveSize):
+		if(dataSize > destVar.size): # TODO, check if works, changed from destVar.effectiveSize to destVar.size
 			endOfOverflowAddress = -int(destVar.address,16) + dataSize
 			print("end of overflow address = {}".format(endOfOverflowAddress))
 			for variable in self.context.getVariables():
