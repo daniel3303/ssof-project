@@ -32,10 +32,10 @@ class Stack:
         self.variables = []
         for v in self.function.getVariables():
             # Clone the variable object
-            newVariable = Variable(v.getName(), v.getType(), v.getSize(), v.getAddress())
-            offset = newVariable.getAddress()[4:]
-            executionAddress = int(self.registers["rbp"], 16) - int(offset, 16)
-            newVariable.setAddress(hex(executionAddress))
+            newVariable = Variable(v.getName(), v.getType(), v.getSize(), v.getAssemblyAddress())
+            offset = newVariable.getAssemblyAddress()[4:]
+            address = int(self.registers["rbp"], 16) - int(offset, 16)
+            newVariable.setAddress(hex(address))
 
             self.variables.append(newVariable)
             print("VARIABLE: "+newVariable.getName() + "\nADDRESS: "+newVariable.getAddress()+"\n")
@@ -110,7 +110,7 @@ class Stack:
     def getVariableByAddress(self, address):
 		for var in self.variables:
 			print("getVariableByAddress: testing var {} == specified addr {}".format(var.address, address))
-			if var.address == address:
+			if var.getAddress() == address:
 				return var
 
     def getVariables(self):
