@@ -5,6 +5,9 @@ import re
 
 class Executer:
 
+	def __init__(self, context):
+		self.context = context
+
 	# "Overloading"
 	def visit(self, instruction, context):
 		print("#-- EXECUTING OPERATION: "+str(instruction.op)+" --#")
