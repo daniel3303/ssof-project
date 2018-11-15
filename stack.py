@@ -1,13 +1,9 @@
 from function import *
+from variable import *
 
 class Stack:
     def __init__(self, function):
         self.function = function
-        self.values = {} # TODO init values from variables
-
-        #Checks if the function argument is from type Function
-        if not issubclass(function.__class__, Function):
-            raise Error("Invalid argument. @param function must be an instace of Function.")
 
         # x86 arquicteture register.
         # By default all start with value 0
@@ -30,6 +26,26 @@ class Stack:
             'rax': "0x0",
             'r13': "0x0"
         }
+
+        # Variables associated to this function
+        self.variables = []
+        for v in self.function.getVariables():
+            # Clone the variable object
+            newVariable = Variable(v.getName(), v.getType(), v.getSize(), v.getAddress())
+
+            #FIXME always relative to rbp?
+            offset = newVariable.getAddress()[4:]
+            executionAddress = int(self.registers["rbp"], 16) - int(offset, 16)
+            newVariable.setAddress(hex(executionAddress)) 
+
+            self.variables.append(newVariable)
+
+        # Values on the stack
+        self.values = {} # TODO init values from variables
+
+        #Checks if the function argument is from type Function
+        if not issubclass(function.__class__, Function):
+            raise Error("Invalid argument. @param function must be an instace of Function.")
 
 
     def getFunction(self):
@@ -67,6 +83,11 @@ class Stack:
         else:
             raise Error("This should never be executed.")
 
+    def getVariableByAddress(self, address):
+		for var in self.variables:
+			print("getVariableByAddress: testing var {} == specified addr {}".format(var.address, address))
+			if var.address == address:
+				return var
 
 
 class StackManager:
@@ -107,3 +128,7 @@ class StackManager:
 
     def getValue(self, location):
         return self.getCurrentStack().getValue(location)
+
+    def getVariableByAddress(self, address):
+        # FIXME implement search in stacks below?
+		return self.getCurrentStack().getVariableByAddress(address)

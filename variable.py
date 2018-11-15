@@ -5,3 +5,18 @@ class Variable:
 		self.size = size
 		self.address = address
 		self.effectiveSize = size # size when simulating input, for example fgets size lower than max size
+
+	def getName(self):
+		return self.name;
+
+	def getType(self):
+		return self.type
+
+	def getSize(self):
+		return self.type
+
+	def getAddress(self):
+		return self.address
+
+	def setAddress(self, newAddress):
+		self.address = newAddress

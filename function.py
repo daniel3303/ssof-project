@@ -26,13 +26,6 @@ class Function:
 		context.pop()
 		print("#-- STACK ELIMINATED --#")
 
-	def getVariableByAddress(self, address):
-		for var in self.variables:
-			print("getVariableByAddress: testing var {} == specified addr {}".format(var.address, address))
-			if var.address == address:
-				return var
-
-
 	def getFirstUnassignedStackAddress(self):
 		sortedVars = sorted(self.variables, key=lambda x: x.address)
 		for idx, var in enumerate(sortedVars):
@@ -43,3 +36,6 @@ class Function:
 					continue
 				else:
 					return nextAddress
+
+	def getVariables(self):
+		return self.variables
