@@ -71,7 +71,8 @@ class Executer:
 
 	def executeCall(self, instruction):
 		print("executing call, instruction name: {}".format(instruction.fName))
-		if "fgets" in instruction.fName:
+		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
+		if "fgets" in instruction.fName: 
 			maxDataSize = int(self.context.getValue("rsi"), 16)
 			print("fgets max data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "fgets", instruction.address)
@@ -91,7 +92,8 @@ class Executer:
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcpy", instruction.address)
 			return
-		elif "strcat" in instruction.fName:
+		# the nullterminator of destination is overwriten by the first character of source, and the null terminator is appended at the end, so final size is sum of lens
+		elif "strcat" in instruction.fName: 
 			destVarAddress = self.context.getValue('rdi')
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			sourceVarAddress = self.context.getValue('rsi')
@@ -124,8 +126,19 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncat", instruction.address)
 			return
 
+		##### advanced
+
+		# TODO test read is working 
+		elif "read" in instruction.fName:
+			destVarAddress = self.context.getValue('rdi')
+			destVar = self.context.getVariableByAddress(destVarAddress)
+			maxSizeN = int(self.context.getValue('rsi'),16)
+			destVar.effectiveSize = maxSizeN
+			self.classifyVulnerabilities(maxSizeN, "rdi", "read", instruction.address)
+
+		# TODO check appending \0 on each of the basic functions
 		# TODO CALL other functions and argument passing
-		# TODO ADVANCED functions here
+		# consider direct access like a[10] = 20
 
 	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
 		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
