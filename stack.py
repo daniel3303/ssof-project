@@ -32,13 +32,12 @@ class Stack:
         for v in self.function.getVariables():
             # Clone the variable object
             newVariable = Variable(v.getName(), v.getType(), v.getSize(), v.getAddress())
-
-            #FIXME always relative to rbp?
             offset = newVariable.getAddress()[4:]
             executionAddress = int(self.registers["rbp"], 16) - int(offset, 16)
-            newVariable.setAddress(hex(executionAddress)) 
+            newVariable.setAddress(hex(executionAddress))
 
             self.variables.append(newVariable)
+            print("AHAHAH"+newVariable.getAddress())
 
         # Values on the stack
         self.values = {} # TODO init values from variables
@@ -59,12 +58,33 @@ class Stack:
 
     def setValue(self, location, value):
         # TODO check if location is in stack bounds
+
+        # Process values
+        value = self.processAssemblyLiteral(value)
+
         if self.isRegister(location):
 		    self.registers[location] = value
 
         elif self.isStackAddress(location):
             self.values[self.getRBPOffset(location)] = value
 
+    def processAssemblyLiteral(self, value):
+        if(value[0] == "[" and value[-1:] == "]"):
+            # FIXME multiplications etc...
+    		valueToParse = value[1:-1] #eg rbp-0x50
+    		valueToParse = valueToParse.replace(" ", "") #remove white spaces
+    		register = valueToParse[0:3]
+    		operation = valueToParse[3:4]
+    		offset = valueToParse[4:]
+
+    		if(operation == "+"):
+    			value = int(self.registers[register], 16) + int(offset, 16)
+    		else:
+    			value = int(self.registers[register], 16) - int(offset, 16)
+
+    		value = hex(value)
+
+        return value
 
     def isStackAddress(self, location):
     	return isinstance(location, basestring) and "[rbp" in location
@@ -88,6 +108,9 @@ class Stack:
 			print("getVariableByAddress: testing var {} == specified addr {}".format(var.address, address))
 			if var.address == address:
 				return var
+
+    def getVariables(self):
+        return self.variables
 
 
 class StackManager:
@@ -132,3 +155,6 @@ class StackManager:
     def getVariableByAddress(self, address):
         # FIXME implement search in stacks below?
 		return self.getCurrentStack().getVariableByAddress(address)
+
+    def getVariables(self):
+        return self.getCurrentStack().getVariables()

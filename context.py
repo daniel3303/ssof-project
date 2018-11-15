@@ -56,3 +56,6 @@ class Context:
 
 	def getVariableByAddress(self, address):
 		return self.stackManager.getVariableByAddress(address)
+
+	def getVariables(self):
+		return self.stackManager.getVariables()

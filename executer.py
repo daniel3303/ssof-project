@@ -66,21 +66,7 @@ class Executer:
 
 
 	def executeLea(self, instruction):
-		# FIXME multiplications on LEA
-		valueToParse = instruction.value[1:-1] #eg rbp-0x50
-		valueToParse = valueToParse.replace(" ", "") #remove white spaces
-		register = valueToParse[0:3]
-		operation = valueToParse[3:4]
-		offset = valueToParse[4:]
-
-		if(operation == "+"):
-			value = int(self.context.getValue(register), 16) + int(offset, 16)
-		else:
-			value = int(self.context.getValue(register), 16) - int(offset, 16)
-
-		value = hex(value) #use it as a hex number
-
-		self.context.setValue(instruction.dest, value) #FIXME is this how lea works?
+		self.context.setValue(instruction.dest, instruction.value) #FIXME is this how lea works?
 		self.context.printRegisters()
 		return
 
@@ -142,12 +128,6 @@ class Executer:
 		# TODO ADVANCED functions here
 
 	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
-		print("\n\ndebug")
-		print(dataSize)
-		print(destinationRegister)
-		print(fname)
-		print(faddress)
-		print('\n')
 		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
 		self.classifyInvalidAccessVulnerability(dataSize, destinationRegister, fname, faddress)
 
@@ -159,7 +139,7 @@ class Executer:
 		if(dataSize > destVar.effectiveSize):
 			endOfOverflowAddress = -int(destVar.address,16) + dataSize
 			print("end of overflow address = {}".format(endOfOverflowAddress))
-			for variable in self.currentFunction.variables:
+			for variable in self.context.getVariables():
 				if variable.name != destVar.name and -int(variable.address,16) < endOfOverflowAddress and -int(variable.address,16) > -int(destVar.address,16):
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
 					self.context.vulnerabilities.append(vuln1)
