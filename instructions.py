@@ -7,8 +7,8 @@ class Instruction:
 	#def execute(self, context): FIXME is this being used?
 		#executer(self, context)
 
-	def accept(self, visitor):
-		visitor.visit(self)
+	def accept(self, visitor,context):
+		visitor.visit(self, context)
 
 class Add(Instruction):
 

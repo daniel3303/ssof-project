@@ -19,7 +19,7 @@ class Function:
 		print("#-- STACK CREATED --#")
 		executer = Executer(context)
 		for instruction in self.instructions:
-			instruction.accept(executer)
+			instruction.accept(executer, context)
 
 		# Removes the stack created at the beginning of the execution
 		context.pop()
