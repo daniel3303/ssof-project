@@ -66,7 +66,7 @@ class Executer:
 		self.context.printRegisters()
 		return
 
-F	def executeCall(self, instruction):
+	def executeCall(self, instruction):
 		print("executing call, instruction name: {}".format(instruction.fName))
 		if "fgets" in instruction.fName:
 			maxDataSize = int(self.context.getValue("rsi"), 16)
@@ -149,17 +149,25 @@ F	def executeCall(self, instruction):
 
 
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
+		print("-------------------Classifying invalid access:")
+		destVar = self.currentFunction.getVariableByAddress(self.context.registers[destinationRegister])
+		print("dataSize: {} , destVar.size {}".format(dataSize, destVar.size))
+
 		if dataSize > destVar.size:
 			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
 			overflowRange = [-int(destVar.address, 16), endOfOverflowAddress]
-			unAddr = self.currentFunction.getFirstUnassignedStackAddress()
+			print("overflowrange: {}".format(overflowRange))
+			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0]) 
+			print("unassigned address first {}".format(unAddr))
 			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
-				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, hex(unAddr))
+				outAddressRelativeToRbp = "rbp"+hex(unAddr) if unAddr < 0 else "rbp+"+hex(unAddr)
+				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
 				self.context.vulnerabilities.append(vuln1)
 
-			if endOfOverflowAddress > 8:
-				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, hex(endOfOverflowAddress))
+			if endOfOverflowAddress >= 16: # if writes over 0x10
+				print("scorruption endOfOverflowAddress : {}".format(endOfOverflowAddress))
+				# TODO , finding this address of SCORRUPTION maybe with the stack?
+				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, "rbp+"+"0x10")
 				self.context.vulnerabilities.append(vuln2)
 
 
