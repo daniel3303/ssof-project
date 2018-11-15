@@ -41,8 +41,8 @@ class Context:
 	def getStackManager(self):
 		return self.stackManager
 
-	def createStack(self):
-		return self.stackManager.createStack()
+	def createStack(self, function):
+		return self.stackManager.createStack(function)
 
 	def popStack(self):
 		return self.stackManager.popStack()

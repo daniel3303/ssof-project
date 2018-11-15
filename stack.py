@@ -5,8 +5,8 @@ class Stack:
         self.function = function
 
         #Checks if the function argument is from type Function
-        if not issubclass(function, Function):
-            raise Error("Invalid argument type.")
+        if not issubclass(function.__class__, Function):
+            raise Error("Invalid argument. @param function must be an instace of Function.")
 
         # x86 arquicteture register.
         # By default all start with value 0
@@ -39,12 +39,10 @@ class Stack:
 
 
 class StackManager:
-    def __init__(self, function):
+    def __init__(self):
         self.stacks = []
 
     def createStack(self, function):
-        if not issubclass(function, Function):
-            raise Error("Invalid argument. @param function must be an instace of Function.")
         self.stacks.append(Stack(function))
         return True
 
@@ -58,11 +56,11 @@ class StackManager:
         return self.stacks.pop()
 
     # @Return Stack or None if empty
-    def getCurrentStack():
+    def getCurrentStack(self):
         if len(self.stacks) < 1:
             return None
 
-        return self.stacks[len(self.stacks - 1)]
+        return self.stacks[len(self.stacks) - 1]
 
     def getCurrentStackRegisters(self):
         return self.getCurrentStack().getRegisters()
