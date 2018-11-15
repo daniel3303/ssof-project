@@ -11,23 +11,26 @@ class Function:
 		self.instructions.append(instruction)
 
 	def addVariable(self, variable):
-		variable.address = variable.address.encode('utf-8')[4:]
+		variable.address = variable.address.encode('utf-8')#[4:]
 		self.variables.append(variable)
 
 	def execute(self, context):
 		# Create a stack for this function
 		context.push(self)
+		print("#-- STACK CREATED --#")
 
 		for instruction in self.instructions:
 			instruction.accept(Executer(), context)
 
 		# Removes the stack created at the beginning of the execution
 		context.pop()
+		print("#-- STACK ELIMINATED --#")
 
 	def getVariableByAddress(self, address):
 		for var in self.variables:
 			print("getVariableByAddress: testing var {} == specified addr {}".format(var.address, address))
-			if var.address == address: return var
+			if var.address == address:
+				return var
 
 
 	def getFirstUnassignedStackAddress(self):

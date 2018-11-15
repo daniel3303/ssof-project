@@ -7,7 +7,7 @@ class Executer:
 
 	# "Overloading"
 	def visit(self, instruction, context):
-		print(instruction.op)
+		print("#-- EXECUTING OPERATION: "+str(instruction.op)+" --#")
 		self.context = context
 		self.currentFunction = self.context.getCurrentFunction()
 
@@ -66,7 +66,21 @@ class Executer:
 
 
 	def executeLea(self, instruction):
-		self.context.setValue(instruction.dest, instruction.value) #FIXME is this how lea works?
+		# FIXME multiplications on LEA
+		valueToParse = instruction.value[1:-1] #eg rbp-0x50
+		valueToParse = valueToParse.replace(" ", "") #remove white spaces
+		register = valueToParse[0:3]
+		operation = valueToParse[3:4]
+		offset = valueToParse[4:]
+
+		if(operation == "+"):
+			value = int(self.context.getValue(register), 16) + int(offset, 16)
+		else:
+			value = int(self.context.getValue(register), 16) - int(offset, 16)
+
+		value = hex(value) #use it as a hex number
+
+		self.context.setValue(instruction.dest, value) #FIXME is this how lea works?
 		self.context.printRegisters()
 		return
 
@@ -78,7 +92,7 @@ class Executer:
 			print("fgets max data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "fgets", instruction.address)
 			destVarAddress = self.context.getValue("rdi")
-			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
+			destVar = self.context.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize
 			return
 		elif "gets" in instruction.fName:
@@ -88,16 +102,16 @@ class Executer:
 			return
 		elif "strcpy" in instruction.fName:
 			sourceVarAddress = self.context.getValue('rsi')
-			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
+			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcpy", instruction.address)
 			return
 		elif "strcat" in instruction.fName:
 			destVarAddress = self.context.getValue('rdi')
-			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
+			destVar = self.context.getVariableByAddress(destVarAddress)
 			sourceVarAddress = self.context.getValue('rsi')
-			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
+			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = destVar.effectiveSize + sourceVar.effectiveSize # appends \0 at end but first \0 is overwritten
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strcat", instruction.address)
@@ -105,19 +119,19 @@ class Executer:
 		elif "strncpy" in instruction.fName:
 			maxSizeN = int(self.context.getValue('rdx'),16)
 			sourceAddr = self.context.getValue('rsi')
-			sourceVar = self.currentFunction.getVariableByAddress(sourceAddr)
+			sourceVar = self.context.getVariableByAddress(sourceAddr)
 			sourceVarSize = sourceVar.effectiveSize
 			destAddr = self.context.getValue('rdi')
-			destVar = self.currentFunction.getVariableByAddress(destAddr)
+			destVar = self.context.getVariableByAddress(destAddr)
 			maxDataSize = min(maxSizeN, sourceVarSize)
 			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, "rdi", "strncpy", instruction.address)
 			return
 		elif "strncat" in instruction.fName:
 			destVarAddress = self.context.getValue('rdi')
-			destVar = self.currentFunction.getVariableByAddress(destVarAddress)
+			destVar = self.context.getVariableByAddress(destVarAddress)
 			sourceVarAddress = self.context.getValue('rsi')
-			sourceVar = self.currentFunction.getVariableByAddress(sourceVarAddress)
+			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxSizeN = int(self.context.getValue('rdx'),16)
 			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN)
 			print("data size {}".format(maxDataSize))
@@ -128,12 +142,18 @@ class Executer:
 		# TODO ADVANCED functions here
 
 	def classifyVulnerabilities(self, dataSize, destinationRegister, fname, faddress):
+		print("\n\ndebug")
+		print(dataSize)
+		print(destinationRegister)
+		print(fname)
+		print(faddress)
+		print('\n')
 		self.classifyOverflowVulnerability(dataSize, destinationRegister, fname, faddress)
 		self.classifyInvalidAccessVulnerability(dataSize, destinationRegister, fname, faddress)
 
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		self.context.getValue(destinationRegister)
-		destVar = self.currentFunction.getVariableByAddress(self.context.getValue(destinationRegister))
+		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
+		print("destvar: "+str(destVar))
 		print("destVar size {}".format(destVar.size))
 		print("destVar effective size: {}".format(destVar.effectiveSize))
 		if(dataSize > destVar.effectiveSize):
@@ -152,7 +172,7 @@ class Executer:
 
 
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
-		destVar = self.currentFunction.getVariableByAddress(self.context.getValue(destinationRegister))
+		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
 		if dataSize > destVar.size:
 			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
 			overflowRange = [-int(destVar.address, 16), endOfOverflowAddress]
