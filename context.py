@@ -11,12 +11,6 @@ class Context:
 		self.functions = {}
 		self.vulnerabilities = []
 
-		#register values in hex
-		self.registers = {'r14': "0x0", 'r15': "0x0", 'rcx': "0x0", 'rsi': "0x0",
-						'r10': "0x0", 'rbx': "0x0", 'rdi': "0x0", 'r11': "0x0",
-						'r8': "0x0", 'rdx': "0x0", 'rip': "0x0", 'r9': "0x0",
-						'r12': "0x0", 'rbp': "0x0", 'rsp': "0x0", 'rax': "0x0", 'r13': "0x0" }
-
 		# The starting point
 		self.currentFunction = "main"
 
@@ -35,8 +29,9 @@ class Context:
 
 	def printRegisters(self):
 		string = "Registers: "
-		for key in self.stackManager.getCurrentStackRegisters():
-			print("key:{} value:{}".format(key, self.registers[key]))
+		registers = self.stackManager.getCurrentStackRegisters()
+		for key in registers:
+			print("key:{} value:{}".format(key, registers[key]))
 
 	def getStackManager(self):
 		return self.stackManager
@@ -46,3 +41,8 @@ class Context:
 
 	def popStack(self):
 		return self.stackManager.popStack()
+
+	def isRegister(self, name):
+		return self.stackManager.registerExistsInCurrentStack(name)
+
+	def setValue(self, leftValue, value)

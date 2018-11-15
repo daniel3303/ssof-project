@@ -3,6 +3,7 @@ from function import *
 class Stack:
     def __init__(self, function):
         self.function = function
+        self.values = {} # TODO init values from variables
 
         #Checks if the function argument is from type Function
         if not issubclass(function.__class__, Function):
@@ -37,6 +38,27 @@ class Stack:
     def getRegisters(self):
         return self.registers
 
+    def isRegister(self, name):
+        return name in self.registers
+
+    def setValue(self, location, value):
+        #TODO check invalid writes
+        
+        if self.isRegister(location):
+			self.context.registers[location] = value
+
+        elif self.isStackValue(location):
+            self.values[self.getStackValueAddress(location)] = value
+
+
+
+    def isStackValue(self, location):
+    	return isinstance(location, basestring) and "[rbp" in memPos
+
+    def getStackValueAddress(self, memPos):
+    	return memPos[memPos.find('[rbp')+5:memPos.find(']')]
+
+
 
 class StackManager:
     def __init__(self):
@@ -64,3 +86,9 @@ class StackManager:
 
     def getCurrentStackRegisters(self):
         return self.getCurrentStack().getRegisters()
+
+    def registerExistsInCurrentStack(self, name):
+        return self.getCurrentStack().isRegister(name)
+
+    def setValue(self, location, value):
+        self.getCurrentStack().setValue(location, value)

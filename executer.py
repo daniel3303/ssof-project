@@ -42,7 +42,7 @@ class Executer:
 			#makes a mov operation where the value to copy is a register
 			if self.isRegister(instruction.value):
 				print("both registers")
-				self.context.registers[instruction.dest] = self.context.registers[instruction.value]
+				self.context.setValue(instruction.dest, instruction.value)
 				self.context.printRegisters()
 				return
 
@@ -208,8 +208,6 @@ class Executer:
 
 		return int(value, 16)
 
-	def isRegister(self, string):
-		return string in self.context.registers
 
 	def isMemoryPosition(self, memPos):
 		return isinstance(memPos, basestring) and "WORD PTR" in memPos
