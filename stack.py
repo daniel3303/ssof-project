@@ -7,6 +7,7 @@ class Stack:
 
         # x86 arquicteture register.
         # By default all start with value 0
+        #FIXME copy registers from previous stack
         self.registers = {
             'r14': "0x0",
             'r15': "0x0",
@@ -37,7 +38,7 @@ class Stack:
             newVariable.setAddress(hex(executionAddress))
 
             self.variables.append(newVariable)
-            print("AHAHAH"+newVariable.getAddress())
+            print("VARIABLE: "+newVariable.getName() + "\nADDRESS: "+newVariable.getAddress()+"\n")
 
         # Values on the stack
         self.values = {} # TODO init values from variables
@@ -52,6 +53,9 @@ class Stack:
 
     def getRegisters(self):
         return self.registers
+
+    def setRegisters(self, newRegisters):
+        self.registers = newRegisters
 
     def isRegister(self, name):
         return name in self.registers
@@ -118,7 +122,14 @@ class StackManager:
         self.stacks = []
 
     def push(self, function):
-        self.stacks.append(Stack(function))
+        newStack = Stack(function)
+        currentStack = self.getCurrentStack()
+
+        # When a new stack is pushed copy the old registers
+        if currentStack is not None:
+            newStack.setRegisters(currentStack.getRegisters())
+
+        self.stacks.append(newStack)
         return True
 
 
@@ -128,7 +139,10 @@ class StackManager:
         if len(self.stacks) < 1:
             return None
 
-        return self.stacks.pop()
+        popped =  self.stacks.pop()
+
+        self.getCurrentStack().setRegisters(popped.getRegisters())
+        return popped
 
     # @Return Stack or None if empty
     def getCurrentStack(self):
