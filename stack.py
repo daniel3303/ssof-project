@@ -8,10 +8,8 @@ class Stack:
 
 
 	def setValue(self, location, value):
-		print(value)
 		value = self.processAssemblyLiteral(value)
 		if self.context.isRegister(location):
-			print("SETTING "+location+" to "+str(value))
 			self.context.registers[location] = value
 			if(location == "rbp"):
 				self.getCurrentFrame().updateVarsAddress(value)
@@ -27,13 +25,18 @@ class Stack:
 
 	def processAssemblyLiteral(self, value):
 		# QWORD PTR [rbp+0x10]
-		if value.find("[") > 0 and value.find("]") > 0:
+		if self.isRelativeAddress(value) and value.find("[") > 0 and value.find("]") > 0:
 			# FIXME multiplications etc...
 			addressToParse = value[value.find("[")+1:value.find("]")] #eg rbp-0x50
 			addressToParse = addressToParse.replace(" ", "") #remove white spaces
 			address = self.convertToAbsoluteAddress(addressToParse)
 			return self.getValue(address)
-		#else is address or numeric
+		
+		# if not an address relative to rbp but still an address
+		if "WORD PTR" in value:
+			return '0x0'
+
+		# else numeric
 		return value
 
 	def isRelativeAddress(self, location):
@@ -114,7 +117,6 @@ class Frame:
 
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
-		print("getting:"+address)
 		for var in self.function.variables:
 			if address == var.getAssemblyAddress():
 				return var
@@ -125,11 +127,9 @@ class Frame:
 
 	def getValue(self, location):
 		#TODO: get value at location, then next var, etc
-		print("LOC"+location)
 		if(self.function.isVariableBaseAddress(location)):
 			return self.getVariableByAddress(location).getValue()
 		else:
-			print(location)
 			return self.frameValues[location]
 
 	def setValue(self, address, value):
@@ -138,7 +138,6 @@ class Frame:
 		else:
 		#	'''TODO adicionar logica para tratar casos em que posicao relativa nao coincide com variavel'''
 			self.frameValues[address] = value
-			print("SETTING: "+address+ " TO: "+value)
 			return
 
 	#Store a copy of the variables and remove this

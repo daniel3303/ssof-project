@@ -64,7 +64,6 @@ for name in inFiles:
 		result = ""
 	#out += result
 
-	out += "-------------------------------------------------\n\n"
 	try:
 		expectedOutFile = name[:-5] + ".output.json"
 		outFile = open(expectedOutFile, 'r')
@@ -73,13 +72,11 @@ for name in inFiles:
 	except:
 		outJSON = {}
 
-	print("#----------------------------------------------------#")
 	if same_vunerabilities(result, outJSON):
 		print("TEST PASS: " + name)
 		testPassCtr+=1
 	else:
 		print(bcolors.FAIL + "TEST FAIL: " + name + bcolors.ENDC)
-	print("#----------------------------------------------------#\n\n")
 
 
 

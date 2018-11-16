@@ -13,7 +13,6 @@ class Executer:
 	# "Overloading"
 	def visit(self, instruction):
 		self.currentFunction = self.context.getCurrentFunction()
-		print(instruction.op)
 
 		if isinstance(instruction, Call):
 			self.executeCall(instruction)
@@ -40,36 +39,27 @@ class Executer:
 		elif isinstance(instruction, Nop):
 			self.executeNop(instruction)
 
-		#self.context.printRegisters()
-		#print("\n\n")
 
 	# :::::::: execute methods ::::::::::
 
+	
+
 	def executeMov(self, instruction):
-		print(instruction.value)
 		# Makes a mov operation where the value to copy is a register
 		if self.context.isRegister(instruction.value):
 			value = self.context.getValue(instruction.value)
-			print("->value"+str(value))
-			print("->dest"+str(instruction.dest))
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a value on the stack
 		# TODO this is broken, never is considered as stack adress, and if it is, the getValue returns None
 		elif self.context.isStackAddress(instruction.value):
-			#rawDestAddr = instruction.value[instruction.value.find('[rbp')+1:-1]
 			value = self.context.getValue(instruction.value)
-			#print(rawDestAddr)
-			#print("->->"+value)
-			#print(instruction.dest)
-			#self.context.setValue(rawDestAddr, value)
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a literal
 		else:
 			self.context.setValue(instruction.dest, instruction.value)
 
-		# TODO this is broken atm
 		self.validateDirectAccess(instruction)
 
 	# TODO not working properly, destAddr for stack corruption is always positive and invalid access not being detected
@@ -157,7 +147,6 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "gets", instruction.address)
 			return
 		elif "strcpy" in instruction.fName:
-			self.context.printRegisters()
 			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize
@@ -206,7 +195,6 @@ class Executer:
 			destVar.isNullTerminated = True
 			return
 
-		##### advanced
 
 		elif "read" in instruction.fName:
 			destVarAddress = self.getFunctionArgumentByIndex(1)
@@ -255,8 +243,6 @@ class Executer:
 				destVar.effectiveSize = math.inf
 			return
 
-		# TODO CALL other functions and argument passing
-		# TODO ADVANCED functions here
 
 	def executeLeave(self, instruction):
 		return
@@ -268,6 +254,14 @@ class Executer:
 		self.context.returnFromCurrentFunction()
 		return
 
+	def executeAdd(self, instruction):
+		#TODO, although we dont keep track of stack pointer, just incase
+		return
+
+	def executeSub(self, instruction):
+		#TODO, although we dont keep track of stack pointer, just incase
+		return
+
 	# missing some, like Nop that was deleted, was it really necessary?
 	# for nop, it updates stack pointer by 4, but we dont track the stack pointer....
 
@@ -276,14 +270,14 @@ class Executer:
 		arg0 = self.context.getValue(instruction.arg0)
 		arg1 = self.context.getValue(instruction.arg1) 
 
-		self.ZF = 1 if arg0 == arg1 else 0
+		self.context.ZF = 1 if arg0 == arg1 else 0
 
 	def executeTest(self, instruction):
 		# are they registers or stack memory positions?
 		arg0 = self.context.getValue(instruction.arg0)
 		arg1 = self.context.getValue(instruction.arg1) 
 		
-		self.ZF = 1 if arg0 == arg1 and arg0 == 0 else 0
+		self.context.ZF = 1 if arg0 == arg1 and arg0 == 0 else 0
 
 	def executeJmp(self, instruction):
 		self.jumpToInstructionAddress(instruction, instruction.targetAddress)

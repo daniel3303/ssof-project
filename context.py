@@ -59,12 +59,6 @@ class Context:
 	def execute(self):
 		self.functions[self.currentFunction].execute(self)
 
-	def printRegisters(self):
-		string = "Registers: "
-		registers = self.getRegisters()
-		for key in registers:
-			print(string, end='')
-			print("key:{} value:{}".format(key, registers[key]))
 
 	def getstack(self):
 		return self.stack
@@ -97,7 +91,6 @@ class Context:
 		return location in ["rdi","rsi","rdx","rcx","r8","r9"]
 
 	def callFunction(self, functionName):
-		print("FUNCTION: "+self.stack.getCurrentFunctionName()+ " CALLING: "+functionName)
 		self.pushFrame(self.functions[functionName])
 		self.currentFunction = functionName
 		self.functions[functionName].execute(self)
@@ -108,7 +101,6 @@ class Context:
 		returningFrom = self.stack.getCurrentFunctionName()
 		self.popFrame()
 		self.currentFunction = self.stack.getCurrentFunctionName()
-		print("RETURNED FROM: "+returningFrom)
 
 
 	def isUserDefinedFunction(self, functionName):
