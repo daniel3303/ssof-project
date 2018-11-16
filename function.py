@@ -28,11 +28,13 @@ class Function:
 			if inst.pos == pos:
 				return inst
 
+	# Get an instruction by its address
 	def getInstructionByAddress(self, address):
 		for inst in self.instructions:
 			if inst.address == address:
 				return inst
 
+	# The stack range being used
 	def getUnassignedStackAddressRange(self):
 		if len(self.variables) == 0: return
 		sortedVars = sorted(self.variables, key=lambda x: int(x.address,16), reverse=False)
@@ -73,6 +75,7 @@ class Function:
 				return True
 		return False
 
+	#Calculates the variables real address when the rbp changes
 	def updateVarsAddress(self, newRBP):
 		for var in self.variables:
 			address = int(var.getAssemblyAddress()[3:], 16) + int(newRBP, 16)
