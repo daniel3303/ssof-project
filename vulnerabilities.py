@@ -46,8 +46,8 @@ class RetOverflow(Vulnerability):
 
 # Advanced
 class InvalidAccess(Vulnerability):
-	def __init__(self, function, address, fnname, overflowingVar, overflownAddress):
-		Vulnerability.__init__(self,  function, address, fnname, overflowingVar)
+	def __init__(self, function, address, fnname, overflowVar, overflownAddress):
+		Vulnerability.__init__(self,  function, address, fnname, overflowVar)
 		self.overflownAddress = overflownAddress
 
 	def toJSON(self):
