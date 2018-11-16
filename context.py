@@ -65,21 +65,26 @@ class Context:
 	def getstack(self):
 		return self.stack
 
+	# Creates a new stack frame for a new function call
 	def pushFrame(self, function):
 		return self.stack.pushFrame(function)
 
+	# Removes the top stack frame
 	def popFrame(self):
 		return self.stack.popFrame()
 
 	def setValue(self, leftValue, value):
 		self.stack.setValue(leftValue, value)
 
+	# Checks if an adress belongs to the stack
 	def isStackAddress(self, location):
 		return self.stack.isRelativeAddress(location)
 
+	# Get a value (from the stack or from a register)
 	def getValue(self, location):
 		return self.stack.getValue(location)
 
+	# Get a list variables from the current function being executed
 	def getVariables(self):
 		return self.stack.getCurrentFrame().getVariables()
 
@@ -89,9 +94,11 @@ class Context:
 	def getCurrentVariables(self):
 		return self.functions[self.currentFunction].variables
 
+	# Check if an address is an argument (ie. is a x86 register reserved to pass arguments)
 	def isFunctionArgument(self,location):
 		return location in self.argRegisterPassOrder
 
+	# Call a new function (created a new stack, changes the execution to the new function)
 	def callFunction(self, functionName):
 		# mark any variables in registers that are passed as originating from previous frame
 		localVarsThatAreArgs = self.getListOfVariablesInArgumentRegisters()
@@ -111,22 +118,23 @@ class Context:
 				localVarsInRegisters.append(self.getVariableByAddress(regValue))
 		return localVarsInRegisters
 
+	# Checks if a value in a register is the address of a local variable from the current function being executed
 	def isRegisterValueALocalVarAddress(self, address):
 		for var in self.stack.getCurrentFrame().function.variables:
 			if var.assemblyAddress == address:
 				return True
-				
+
 	#Returns from current function
 	def returnFromCurrentFunction(self):
 		returningFrom = self.stack.getCurrentFunctionName()
 		self.popFrame()
-		
+
 		# undo the passed asargument flag on respective variables
 		curFrame = self.stack.getCurrentFrame()
 		if curFrame != None:
 			for var in curFrame.function.variables:
 				var.passedAsArgumentToNextFrame = False
-		
+
 		self.currentFunction = returningFrom
 
 
