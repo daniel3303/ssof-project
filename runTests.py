@@ -4,7 +4,8 @@ import errno
 import glob
 import json
 import subprocess
-import parser
+from main import Parser
+
 
 path = 'tests/*.json'
 inFiles = [name for name in glob.glob(path) if 'output' not in os.path.basename(name)]
@@ -22,9 +23,11 @@ for name in inFiles:
 		for vuln in context.vulnerabilities:
 			result.append(vuln.toJSON())
 
-	except:
+	except Exception as exp:
+		print(exp)
 		result = ""
 	#out += result
+
 	out += "-------------------------------------------------\n\n"
 	try:
 		expectedOutFile = name[:-5] + ".output.json"
@@ -33,6 +36,7 @@ for name in inFiles:
 		outJSON = json.loads(outJSON)
 	except:
 		outJSON = {}
+
 	if(result == outJSON):
 		print("TEST PASS: " + name)
 		testPassCtr+=1
