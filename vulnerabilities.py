@@ -96,19 +96,3 @@ class DirectStackCorruption(Vulnerability):
 		del jsonData['fnname']
 		del jsonData['overflow_var']
 		return jsonData
-
-''' TESTING
-vo = VarOverflow('main', '4005ab', 'fgets', 'buf', 'control')
-rbpo = RBPOverflow('main', '4005ab', 'fgets', 'buf')
-reto = RetOverflow('main', '4005ab', 'fgets', 'buf')
-invacc = InvalidAccess('main', '4005ab', 'fgets', 'buf', 'rbp-0x10')
-scorr = StackCorruption('main', '4005ab', 'fgets', 'buf', 'rbp-0x10')
-
-out = []
-out.append(vo.toJSON())
-out.append(rbpo.toJSON())
-out.append(reto.toJSON())
-out.append(invacc.toJSON())
-out.append(scorr.toJSON())
-print(json.dumps(out, indent=4, separators=(',', ': ')))
-'''

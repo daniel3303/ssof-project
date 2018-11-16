@@ -19,19 +19,29 @@ class Function:
 		context.pushFrame(self)
 		executer = Executer(context)
 		for instruction in self.instructions:
-			instruction.accept(executer)
+			if instruction.skip == False:
+				instruction.accept(executer)
+				instruction.executed = True 
 		context.popFrame()
+
+	def getInstructionByPos(self, pos):
+		for inst in self.instructions:
+			if inst.pos == pos:
+				return inst
+
+	def getInstructionByAddress(self, address):
+		for inst in self.instructions:
+			if inst.address == address:
+				return inst
 
 	def getUnassignedStackAddressRange(self):
 		if len(self.variables) == 0: return
-		#sortedVars = self.getSortedListOfVariablesByAddress()
 		sortedVars = sorted(self.variables, key=lambda x: int(x.address,16), reverse=False)
 
 		for idx, var in enumerate(sortedVars):
 			nextAddress = int(var.address, 16) + var.size
 			# if there exists a var after this one
 			if idx < len(sortedVars)-1:
-				nextAddress = int(var.address,16) + var.size
 				if nextAddress == int(sortedVars[idx+1].address,16):
 					continue
 				else:

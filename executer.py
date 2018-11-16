@@ -5,7 +5,6 @@ import re
 import math
 
 class Executer:
-
 	def __init__(self, context):
 		self.context = context
 		# helper array containing the order of how arguments are passed to functions in 64 bits
@@ -38,6 +37,8 @@ class Executer:
 			self.executeRet(instruction)
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction)
+		elif isinstance(instruction, Nop):
+			self.executeNop(instruction)
 
 		#self.context.printRegisters()
 		#print("\n\n")
@@ -113,6 +114,9 @@ class Executer:
 		curFunction = self.context.getCurrentFunction()
 		return curFunction.isAddressUnassignedStackAddress(addr)
 
+	def executeNop(self, instruction):
+		# do nothing
+		return 
 
 	def executeLea(self, instruction):
 		if instruction.obs != None:
@@ -264,25 +268,44 @@ class Executer:
 		self.context.returnFromCurrentFunction()
 		return
 
+	# missing some, like Nop that was deleted, was it really necessary?
+	# for nop, it updates stack pointer by 4, but we dont track the stack pointer....
 
-	### Advanced
 	def executeCmp(self, instruction):
-		return
+		# are they registers or stack memory positions?
+		arg0 = self.context.getValue(instruction.arg0)
+		arg1 = self.context.getValue(instruction.arg1) 
+
+		self.ZF = 1 if arg0 == arg1 else 0
 
 	def executeTest(self, instruction):
-		return
-
-	def executeJe(self, instruction):
-		return
+		# are they registers or stack memory positions?
+		arg0 = self.context.getValue(instruction.arg0)
+		arg1 = self.context.getValue(instruction.arg1) 
+		
+		self.ZF = 1 if arg0 == arg1 and arg0 == 0 else 0
 
 	def executeJmp(self, instruction):
-		return
+		self.jumpToInstructionAddress(instruction, instruction.targetAddress)
+		
+	def executeJe(self, instruction):
+		# jump if equal, ZF = 1 
+		if self.context.ZF == 1:
+			self.jumpToInstructionAddress(instruction, instruction.targetAddress)
 
 	def executeJne(self, instruction):
-		return
+		# jump if not equal, ZF = 0 
+		if self.context.ZF == 0:
+			self.jumpToInstructionAddress(instruction, instruction.targetAddress)
 
-	## end advanced
+	def jumpToInstructionAddress(self, currentInstruction, instAddress):
+		curFunc = self.context.getCurrentFunction()
+		targetInst = curFunc.getInstructionByAddress(instAddress)
+		self.jumpFromPosToPos(currentInstruction.pos, targetInst.pos)
 
+	def jumpFromPosToPos(self, startPos, targetPos):
+		for pos in range(startPos+1, targetPos):
+			self.context.getCurrentFunction().getInstructionByPos(pos).skip = True
 
 	def getMemoryPositionSize(self, memPos):
 		if(self.isMemoryPosition(memPos)):
