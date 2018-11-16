@@ -10,6 +10,7 @@ class Context:
 		# The starting point
 		self.currentFunction = "main"
 
+		#Registers
 		self.registers = {
 			'r14': "0x0",
 			'r15': "0x0",

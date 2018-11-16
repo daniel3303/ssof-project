@@ -79,7 +79,7 @@ class Stack:
 		return self.frames[-1]
 
 
-
+# Represents a Stack Frame
 class Frame:
 
 	def __init__(self, function):
@@ -93,6 +93,7 @@ class Frame:
 			if address >= var.getAssemblyAddress() and address < var.getAssemblyAddress() + var.getSize():
 				return var
 
+	#FIXME store a copy of the variables
 	def getVariables(self):
 		return self.function.variables
 
@@ -108,5 +109,6 @@ class Frame:
 		#	'''TODO adicionar logica para tratar casos em que posicao relativa nao coincide com variavel'''
 			return
 
+	#Store a copy of the variables and remove this
 	def updateVarsAddress(self, newRBP):
 		self.function.updateVarsAddress(newRBP)
