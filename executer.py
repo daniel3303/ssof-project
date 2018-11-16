@@ -45,17 +45,24 @@ class Executer:
 	# :::::::: execute methods ::::::::::
 
 	def executeMov(self, instruction):
+		print(instruction.value)
 		# Makes a mov operation where the value to copy is a register
 		if self.context.isRegister(instruction.value):
 			value = self.context.getValue(instruction.value)
+			print("->value"+str(value))
+			print("->dest"+str(instruction.dest))
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a value on the stack
 		# TODO this is broken, never is considered as stack adress, and if it is, the getValue returns None
 		elif self.context.isStackAddress(instruction.value):
-			rawDestAddr = instruction.value[instruction.value.find('[rbp')+1:-1]
-			value = self.context.getValue(rawDestAddr)
-			self.context.setValue(rawDestAddr, value)
+			#rawDestAddr = instruction.value[instruction.value.find('[rbp')+1:-1]
+			value = self.context.getValue(instruction.value)
+			#print(rawDestAddr)
+			#print("->->"+value)
+			#print(instruction.dest)
+			#self.context.setValue(rawDestAddr, value)
+			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a literal
 		else:
@@ -146,6 +153,7 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "gets", instruction.address)
 			return
 		elif "strcpy" in instruction.fName:
+			self.context.printRegisters()
 			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize

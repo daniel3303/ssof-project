@@ -8,8 +8,10 @@ class Stack:
 
 
 	def setValue(self, location, value):
+		print(value)
 		value = self.processAssemblyLiteral(value)
 		if self.context.isRegister(location):
+			print("SETTING "+location+" to "+str(value))
 			self.context.registers[location] = value
 			if(location == "rbp"):
 				self.getCurrentFrame().updateVarsAddress(value)
@@ -24,10 +26,10 @@ class Stack:
 		return address[11:-1]
 
 	def processAssemblyLiteral(self, value):
-		# [rbp+0x10]
-		if(value[0] == "[" and value[-1:] == "]"):
+		# QWORD PTR [rbp+0x10]
+		if value.find("[") > 0 and value.find("]") > 0:
 			# FIXME multiplications etc...
-			addressToParse = value[1:-1] #eg rbp-0x50
+			addressToParse = value[value.find("[")+1:value.find("]")] #eg rbp-0x50
 			addressToParse = addressToParse.replace(" ", "") #remove white spaces
 			address = self.convertToAbsoluteAddress(addressToParse)
 			return self.getValue(address)
@@ -41,8 +43,14 @@ class Stack:
 		return memPos[memPos.find('[rbp')+5:memPos.find(']')]
 
 	def getValue(self, location):
+		#Some pre processing
+		if location.find("[") > 0 and location.find("]") > 0:
+			# FIXME multiplications etc...
+			addressToGet = location[location.find("[")+1:location.find("]")] #eg rbp-0x50
+			addressToGet = addressToGet.replace(" ", "") #remove white spaces
+			location = addressToGet
+
 		if(self.isRelativeAddress(location)):
-			print("LOCALIZAÇÃO:   "+location)
 			return self.getCurrentFrame().getValue(location)
 		elif(self.context.isRegister(location)):
 			return self.context.registers[location]
@@ -96,6 +104,7 @@ class Frame:
 			raise Exception("Invalid argument. @param function must be an instace of Function.")
 		self.function = function
 		self.previousFrame = None
+		self.frameValues = {}
 
 	def setPreviousFrame(self, frame):
 		self.previousFrame = frame
@@ -116,14 +125,20 @@ class Frame:
 
 	def getValue(self, location):
 		#TODO: get value at location, then next var, etc
+		print("LOC"+location)
 		if(self.function.isVariableBaseAddress(location)):
 			return self.getVariableByAddress(location).getValue()
+		else:
+			print(location)
+			return self.frameValues[location]
 
 	def setValue(self, address, value):
 		if(self.function.isVariableBaseAddress(address)):
 			self.getVariableByAddress(address).setValue(value)
 		else:
 		#	'''TODO adicionar logica para tratar casos em que posicao relativa nao coincide com variavel'''
+			self.frameValues[address] = value
+			print("SETTING: "+address+ " TO: "+value)
 			return
 
 	#Store a copy of the variables and remove this
