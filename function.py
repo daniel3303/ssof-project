@@ -22,6 +22,9 @@ class Function:
 			if instruction.skip == False:
 				instruction.accept(executer)
 				instruction.executed = True 
+			else:
+				context.popFrame()
+				return
 		context.popFrame()
 
 	def getInstructionByPos(self, pos):

@@ -260,10 +260,18 @@ class Executer:
 	# for nop, it updates stack pointer by 4, but we dont track the stack pointer....
 
 	def executeCmp(self, instruction):
-		return
+		# are they registers or stack memory positions?
+		arg0 = self.context.getValue(instruction.arg0)
+		arg1 = self.context.getValue(instruction.arg1) 
+
+		self.ZF = 1 if arg0 == arg1 else 0
 
 	def executeTest(self, instruction):
-		return
+		# are they registers or stack memory positions?
+		arg0 = self.context.getValue(instruction.arg0)
+		arg1 = self.context.getValue(instruction.arg1) 
+		
+		self.ZF = 1 if arg0 == arg1 and arg0 == 0 else 0
 
 	def executeJmp(self, instruction):
 		self.jumpToInstructionAddress(instruction, instruction.targetAddress)
@@ -284,7 +292,7 @@ class Executer:
 		self.jumpFromPosToPos(currentInstruction.pos, targetInst.pos)
 
 	def jumpFromPosToPos(self, startPos, targetPos):
-		for pos in range(startPos, targetPos):
+		for pos in range(startPos+1, targetPos):
 			self.context.getCurrentFunction().getInstructionByPos(pos).skip = True
 
 	def getMemoryPositionSize(self, memPos):

@@ -8,7 +8,7 @@ class Context:
 		self.vulnerabilities = []
 
 		# Flag for jumps, set to either 0 or 1
-		self.ZF = 0  
+		self.ZF = 0
 
 		# The starting point
 		self.currentFunction = "main"
