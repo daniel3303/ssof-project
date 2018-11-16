@@ -304,15 +304,15 @@ class Executer:
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
 		if dataSize > destVar.size:
-			endOfOverflowAddress = int(destVar.address, 16) + dataSize
+			endOfOverflowAddress = int(destVar.address, 16) + dataSize 
 			overflowRange = [int(destVar.address, 16)+destVar.size, endOfOverflowAddress]
 			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0])
 			if unAddr != None and unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
-				outAddressRelativeToRbp = self.context.stack.convertToRelativeAddress(hex(overflowRange[0]))
+				outAddressRelativeToRbp = self.context.stack.convertToRelativeAddress(hex(unAddr))
 				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
 				self.saveVulnerability(vuln1)
 
-			if endOfOverflowAddress >= 16: # if writes over 0x10
+			if endOfOverflowAddress > 16: # if writes over 0x10  # note that the position endofoverflowaddress is not overwritten, its exclusive
 				# TODO , finding this address of SCORRUPTION maybe with the stack?
 				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, "rbp+"+"0x10")
 				self.saveVulnerability(vuln2)
