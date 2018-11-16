@@ -39,8 +39,8 @@ class Executer:
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction)
 
-		self.context.printRegisters()
-		print("\n\n")
+		#self.context.printRegisters()
+		#print("\n\n")
 
 	# :::::::: execute methods ::::::::::
 
@@ -119,15 +119,19 @@ class Executer:
 		return
 
 	def isUserDefinedFunction(self, fname):
+		return self.context.isUserDefinedFunction()
 		return "<"+fname+">" in self.context.functions
 
 
 	def executeCall(self, instruction):
+		print(instruction.fName)
+		print(self.isUserDefinedFunction(instruction.fName))
 		# TODO arguments are not passed properly from frame to frame
 		if self.isUserDefinedFunction(instruction.fName):
 			rawFunName = instruction.fName[1:-1]
 			# TODO calling other funcs here
 			#self.context.functions[rawFunName].execute(self.context)
+			self.context.callFunction(rawFunName)
 
 		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
 		if "fgets" in instruction.fName:
