@@ -45,11 +45,14 @@ class Stack:
 			if(location == "rbp"):
 				self.getCurrentFrame().updateVarsAddress(value)
 		elif self.isRelativeAddress(location):
+			location = self.removeSizeDirectives(location)
 			self.getCurrentFrame().setValue(location, value)
 		#* TODO: endereco absoluto. op do tipo mov :
 		#* else:
 		#*
 
+	def removeSizeDirectives(self, address):
+		return address[11:-1]
 
 	def processAssemblyLiteral(self, value):
 		# [rbp+0x10]
@@ -112,7 +115,7 @@ class Frame:
 	def __init__(self, function):
 		if not issubclass(function.__class__, Function):
 			raise Error("Invalid argument. @param function must be an instace of Function.")
-		self.function = function
+		self.function = function		
 		
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
@@ -132,8 +135,7 @@ class Frame:
 		if(self.function.isVariableBaseAddress(address)):
 			self.getVariableByAddress(address).setValue(value)
 		else:
-			'''TODO adicionar logica para tratar casos em que posicao relativa nao coincide com variavel'''
-			return
+		#	'''TODO adicionar logica para tratar casos em que posicao relativa nao coincide com variavel'''
 
 	def updateVarsAddress(self, newRBP):
 		self.function.updateVarsAddress(newRBP)

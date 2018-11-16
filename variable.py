@@ -30,9 +30,6 @@ class Variable:
 		self.assemblyAddress = newAddress
 
 	def setValue(self, value):
-		if(len(value) > size):
-			#TODO adicionar overflow
-			raise Error("Var Overflow")
 		self.effectiveSize = len(value)
 		self.value = value
 
