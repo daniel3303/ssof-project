@@ -3,11 +3,44 @@ from stack import *
 class Context:
 	def __init__(self):
 		self.stack = Stack(self)
-		#self.variables = {} vars globais
+
 		self.functions = {}
 		self.vulnerabilities = []
+
 		# The starting point
 		self.currentFunction = "main"
+
+		self.registers = {
+			'r14': "0x0",
+			'r15': "0x0",
+			'rcx': "0x0",
+			'rsi': "0x0",
+			'r10': "0x0",
+			'rbx': "0x0",
+			'rdi': "0x0",
+			'r11': "0x0",
+			'r8' : "0x0",
+			'rdx': "0x0",
+			'rip': "0x0",
+			'r9' : "0x0",
+			'r12': "0x0",
+			'rbp': "0x0",
+			'rsp': "0x0",
+			'rax': "0x0",
+			'r13': "0x0"
+		}
+
+	def getRegisters(self):
+		return self.registers
+
+	def getRegister(self, register):
+		return self.registers[register]
+
+	def setRegister(self, register, value):
+		self.registers[register] = value
+
+	def isRegister(self, name):
+		return name in self.registers
 
 
 	def getCurrentFunction(self):
@@ -36,9 +69,6 @@ class Context:
 
 	def popFrame(self):
 		return self.stack.popFrame()
-
-	def isRegister(self, name):
-		return self.stack.isRegister(name)
 
 	def setValue(self, leftValue, value):
 		self.stack.setValue(leftValue, value)

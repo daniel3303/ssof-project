@@ -89,6 +89,7 @@ class Executer:
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize
+			#self.classifyInvalidAccessVulnerability(destVar, sourceVar)
 			return
 		# the nullterminator of destination is overwriten by the first character of source, and the null terminator is appended at the end, so final size is sum of lens
 		elif "strcat" in instruction.fName:
@@ -272,3 +273,11 @@ class Executer:
 				# TODO , finding this address of SCORRUPTION maybe with the stack?
 				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, "rbp+"+"0x10")
 				self.context.vulnerabilities.append(vuln2)
+
+	#def classifyInvalidAccessVulnerability(self, destVar, sourceVar): #TODO
+		#destAddr = destVar.getAssemblyAddress().replace("rbp-", "")
+		#size = sourceVar.effectiveSize
+		#print(int(destAddr, 16))
+		#print(size)
+		#if(int(destAddr, 16) <=  size):
+			#print("INVALIDACCS")

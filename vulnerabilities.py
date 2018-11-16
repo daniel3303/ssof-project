@@ -43,7 +43,7 @@ class RetOverflow(Vulnerability):
 		jsonData = Vulnerability.toJSON(self)
 		jsonData['vulnerability'] = 'RETOVERFLOW'
 		return jsonData
-	  
+
 # Advanced
 class InvalidAccess(Vulnerability):
 	def __init__(self, function, address, fnname, overflowingVar, overflownAddress):

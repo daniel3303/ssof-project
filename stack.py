@@ -5,43 +5,12 @@ class Stack:
 	def __init__(self, context):
 		self.context = context
 		self.frames = []
-		#vamos fingir para ja que isto pertence aqui :)
-		self.registers = {
-			'r14': "0x0",
-			'r15': "0x0",
-			'rcx': "0x0",
-			'rsi': "0x0",
-			'r10': "0x0",
-			'rbx': "0x0",
-			'rdi': "0x0",
-			'r11': "0x0",
-			'r8' : "0x0",
-			'rdx': "0x0",
-			'rip': "0x0",
-			'r9' : "0x0",
-			'r12': "0x0",
-			'rbp': "0x0",
-			'rsp': "0x0",
-			'rax': "0x0",
-			'r13': "0x0"
-		}
 
-	def getRegisters(self):
-		return self.registers
-
-	def getRegister(self, register):
-		return self.registers[register]
-
-	def setRegister(self, register, value):
-		self.registers[register] = value
-
-	def isRegister(self, name):
-		return name in self.registers
 
 	def setValue(self, location, value):
 		value = self.processAssemblyLiteral(value)
-		if self.isRegister(location):
-			self.registers[location] = value
+		if self.context.isRegister(location):
+			self.context.registers[location] = value
 			if(location == "rbp"):
 				self.getCurrentFrame().updateVarsAddress(value)
 		elif self.isRelativeAddress(location):
@@ -73,9 +42,10 @@ class Stack:
 
 	def getValue(self, location):
 		if(self.isRelativeAddress(location)):
+			print("LOCALIZAÇÃO:   "+location)
 			return self.getCurrentFrame().getValue(location)
-		elif(self.isRegister(location)):
-			return self.registers[location]
+		elif(self.context.isRegister(location)):
+			return self.context.registers[location]
 
 	def getVariableByAddress(self, address):
 		if(not self.isRelativeAddress(address)):
@@ -85,12 +55,12 @@ class Stack:
 	def convertToAbsoluteAddress(self, relAddress):
 		register = relAddress[0:3]
 		offset = relAddress[3:]
-		address = int(self.registers[register], 16) + int(offset, 16)
+		address = int(self.context.registers[register], 16) + int(offset, 16)
 		address = hex(address)
 		return address
 
 	def convertToRelativeAddress(self, absoluteAddress):
-		offset = int(absoluteAddress, 16) - int(self.registers["rbp"], 16)
+		offset = int(absoluteAddress, 16) - int(self.context.registers["rbp"], 16)
 		offset = hex(offset)
 		if(offset[0] == "-"):
 			return "rbp" + offset
