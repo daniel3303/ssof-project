@@ -13,6 +13,9 @@ class Context:
 		# The starting point
 		self.currentFunction = "main"
 
+		# order of which the arguments are passed to functions in the registers
+		self.argRegisterPassOrder = ['rdi','rsi','rdx','rcx','r8','r9']
+
 		#Registers
 		self.registers = {
 			'r14': "0x0",
@@ -59,7 +62,6 @@ class Context:
 	def execute(self):
 		self.functions[self.currentFunction].execute(self)
 
-
 	def getstack(self):
 		return self.stack
 
@@ -88,17 +90,35 @@ class Context:
 		return self.functions[self.currentFunction].variables
 
 	def isFunctionArgument(self,location):
-		return location in ["rdi","rsi","rdx","rcx","r8","r9"]
+		return location in self.argRegisterPassOrder
 
 	def callFunction(self, functionName):
-		self.pushFrame(self.functions[functionName])
+		# mark any variables in registers that are passed as originating from previous frame
+		localVarsThatAreArgs = self.getListOfVariablesInArgumentRegisters()
+		for var in localVarsThatAreArgs:
+			var.ownerFrame = self.stack.getCurrentFrame()
+
 		self.currentFunction = functionName
+		#self.pushFrame(self.functions[functionName])
 		self.functions[functionName].execute(self)
 
+	# returns a list of variables that are saved in the first 6 registers
+	def getListOfVariablesInArgumentRegisters(self):
+		localVarsInRegisters = []
+		for regName in self.argRegisterPassOrder:
+			regValue = self.registers[regName]
+			if self.isRegisterValueALocalVarAddress(regValue):
+				localVarsInRegisters.append(self.getVariableByAddress(regValue))
+		return localVarsInRegisters
 
+	def isRegisterValueALocalVarAddress(self, address):
+		for var in self.stack.getCurrentFrame().function.variables:
+			return var.assemblyAddress == address
+				
 	#Returns from current function
 	def returnFromCurrentFunction(self):
 		returningFrom = self.stack.getCurrentFunctionName()
+		
 		self.popFrame()
 		self.currentFunction = self.stack.getCurrentFunctionName()
 

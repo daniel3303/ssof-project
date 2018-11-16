@@ -8,6 +8,7 @@ class Variable:
 		self.effectiveSize = size # size when simulating input, for example fgets size lower than max size
 		self.value = ""
 		self.isNullTerminated = True
+		self.ownerFrame = None 
 
 	def getName(self):
 		return self.name

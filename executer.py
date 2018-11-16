@@ -8,7 +8,7 @@ class Executer:
 	def __init__(self, context):
 		self.context = context
 		# helper array containing the order of how arguments are passed to functions in 64 bits
-		self.argRegisterPassOrder = ['rdi','rsi','rdx','rcx','r8','r9']
+		
 
 	# "Overloading"
 	def visit(self, instruction):
@@ -323,10 +323,10 @@ class Executer:
 			return formatString.count('%s')
 
 	def getFunctionArgumentByIndex(self, index):
-		return self.context.getValue(self.argRegisterPassOrder[index])
+		return self.context.getValue(self.context.argRegisterPassOrder[index])
 
 	def getRegisterNameByArgIndex(self, index):
-		return self.argRegisterPassOrder[index]
+		return self.context.argRegisterPassOrder[index]
 
 
 #::::::::::::::: Generate vulnerabilities :::::::::::::::
