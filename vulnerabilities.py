@@ -67,6 +67,31 @@ class StackCorruption(Vulnerability):
 		jsonData['overflown_address'] = self.overflownAddress
 		return jsonData
 
+class DirectInvalidAccess(Vulnerability):
+	def __init__(self, function, address, overflownAddress):
+		Vulnerability.__init__(self,  function, address, "", "")
+		self.overflownAddress = overflownAddress
+
+	def toJSON(self):
+		jsonData = Vulnerability.toJSON(self)
+		jsonData['vulnerability'] = 'INVALIDACCS'
+		jsonData['overflown_address'] = self.overflownAddress
+		del jsonData['fnname']
+		del jsonData['overflow_var']
+		return jsonData
+
+class DirectStackCorruption(Vulnerability):
+	def __init__(self, function, address, overflownAddress):
+		Vulnerability.__init__(self,  function, address, "", "")
+		self.overflownAddress = overflownAddress
+
+	def toJSON(self):
+		jsonData = Vulnerability.toJSON(self)
+		jsonData['vulnerability'] = 'SCORRUPTION'
+		jsonData['overflown_address'] = self.overflownAddress
+		del jsonData['fnname']
+		del jsonData['overflow_var']
+		return jsonData
 
 ''' TESTING
 vo = VarOverflow('main', '4005ab', 'fgets', 'buf', 'control')

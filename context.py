@@ -85,3 +85,7 @@ class Context:
 
 	def getVariableByAddress(self, address):
 		return self.stack.getVariableByAddress(address)
+
+	def getCurrentVariables(self):
+		return self.functions[self.currentFunction].variables
+

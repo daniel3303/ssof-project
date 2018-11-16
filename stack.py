@@ -35,7 +35,7 @@ class Stack:
 		return value
 
 	def isRelativeAddress(self, location):
-		return isinstance(location, str) and "rbp" in location
+		return isinstance(location, str) and ("rbp-" in location or "rbp+" in location)
 
 	def getRBPOffset(self, memPos):
 		return memPos[memPos.find('[rbp')+5:memPos.find(']')]

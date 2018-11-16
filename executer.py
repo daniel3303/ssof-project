@@ -41,26 +41,64 @@ class Executer:
 	# :::::::: execute methods ::::::::::
 
 	def executeMov(self, instruction):
-
 		# Makes a mov operation where the value to copy is a register
 		if self.context.isRegister(instruction.value):
 			value = self.context.getValue(instruction.value)
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a value on the stack
+		# TODO this is broken, never is considered as stack adress, and if it is, the getValue returns None
 		elif self.context.isStackAddress(instruction.value):
-			value = self.context.getValue(instruction.value)
+			value = self.context.getValue(instruction)
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a literal
 		else:
 			self.context.setValue(instruction.dest, instruction.value)
 
-		# Print registers (for debug)
-		#self.context.printRegisters()
+		# TODO this is broken atm
+		#self.validateDirectAccess(instruction)
 
+	# TODO not working properly, destAddr for stack corruption is always positive and invalid access not being detected 
+	def validateDirectAccess(self, instruction):
+		if self.context.isStackAddress(instruction.dest):
+			## DIRECT WRITE ACCESS
+			# parse the actual address
+			destAddr = int(instruction.dest[instruction.dest.find('[rbp')+5:-1],16)
+			variable = self.getVariableContainingAddr(destAddr)
+			if variable != None:
+				if instruction.value == '\0':
+					variable.isNullTerminated = True
+				else:
+					# if we're setting the last element of a variable if array to something thats not '\0'
+					# then this removes the nullterminator, possibly causing overflow with strcpy for example
+					if self.destinationIsLastPositionOfVariable(destAddr, variable):
+						variable.isNullTerminated = False 
+			else:
+				# addr does not belong to a variable then:
+				# invalid access
+				if self.destinationAddrIsUnassignedStackMemory(destAddr):
+					vuln = DirectInvalidAccess(self.currentFunction.name, instruction.dest, "rbp-" + hex(destAddr))
+					self.saveVulnerability(vuln)
+				# scorruption
+				if destAddr >= 16:
+					vuln = DirectStackCorruption(self.currentFunction.name, instruction.dest, "rbp+" + hex(destAddr))
+					self.saveVulnerability(vuln)
 
+	
+	def getVariableContainingAddr(self, addr):
+		variables = self.context.getCurrentVariables()
+		for var in variables:
+			if addr >= int(var.address,16) and addr < int(var.address, 16) + var.size:
+				return var
+		return None		
 
+	def destinationIsLastPositionOfVariable(self, addr, variable):
+		return addr == int(variable.address, 16) + variable.size - 1
+
+	def destinationAddrIsUnassignedStackMemory(self, addr):
+		curFunction = self.context.getCurrentFunction()
+		return curFunction.isAddressUnassignedStackAddress(addr)
 
 
 	def executeLea(self, instruction):
@@ -76,6 +114,7 @@ class Executer:
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize
+			destVar.isNullTerminated = True if destVar.effectiveSize <= destVar.size else False
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "fgets", instruction.address)
 			return
 		elif "gets" in instruction.fName:
@@ -128,11 +167,11 @@ class Executer:
 			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN)
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strncat", instruction.address)
 			destVar.effectiveSize = maxDataSize
+			destVar.isNullTerminated = True
 			return
 
 		##### advanced
 
-		# TODO test read is working
 		elif "read" in instruction.fName:
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
