@@ -264,7 +264,7 @@ class Executer:
 			endOfOverflowAddress = int(destVar.address, 16) + dataSize
 			overflowRange = [int(destVar.address, 16)+destVar.size, endOfOverflowAddress]
 			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0])
-			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
+			if unAddr != None and unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
 				outAddressRelativeToRbp = self.context.stack.convertToRelativeAddress(hex(overflowRange[0]))
 				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
 				self.context.vulnerabilities.append(vuln1)
