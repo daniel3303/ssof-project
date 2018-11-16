@@ -50,7 +50,7 @@ class Stack:
 	def getVariableByAddress(self, address):
 		if(not self.isRelativeAddress(address)):
 			address = self.convertToRelativeAddress(address)
-		return self.frames[-1].getVariableByAddress(address)
+		return self.getCurrentFrame().getVariableByAddress(address)
 
 	def convertToAbsoluteAddress(self, relAddress):
 		register = relAddress[0:3]
@@ -68,7 +68,12 @@ class Stack:
 			return "rbp+" + offset
 
 	def pushFrame(self, function):
-		self.frames.append(Frame(function))
+		currentFrame = self.getCurrentFrame()
+		newFrame = Frame(function)
+		if currentFrame != None:
+			newFrame.setPreviousFrame(currentFrame)
+		self.frames.append(newFrame)
+
 
 	def popFrame(self):
 		if len(self.frames) < 1:
@@ -76,7 +81,9 @@ class Stack:
 		return self.frames.pop()
 
 	def getCurrentFrame(self):
-		return self.frames[-1]
+		if len(self.frames) > 0:
+			return self.frames[-1]
+		return None
 
 # Represents a Stack Frame
 class Frame:
@@ -85,6 +92,13 @@ class Frame:
 		if not issubclass(function.__class__, Function):
 			raise Exception("Invalid argument. @param function must be an instace of Function.")
 		self.function = function
+		self.previousFrame = None
+
+	def setPreviousFrame(frame):
+		self.previousFrame = frame
+
+	def getPreviousFrame():
+		return self.previousFrame
 
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
