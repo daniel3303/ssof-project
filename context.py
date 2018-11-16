@@ -93,10 +93,19 @@ class Context:
 		return location in ["rdi","rsi","rdx","rcx","r8","r9"]
 
 	def callFunction(self, functionName):
-		print("CALLING FUNCTION: "+functionName)
+		print("FUNCTION: "+self.stack.getCurrentFunctionName()+ " CALLING: "+functionName)
+		self.pushFrame(self.functions[functionName])
+		self.currentFunction = functionName
+
+	#Returns from current function
+	def returnFromCurrentFunction(self):
+		returningFrom = self.stack.getCurrentFunctionName()
+		self.popFrame()
+		self.currentFunction = self.stack.getCurrentFunctionName()
+		print("RETURNED FROM: "+returningFrom)
+
 
 	def isUserDefinedFunction(self, functionName):
-		print(functionName)
 		for function in self.functions.keys():
 			if function == functionName:
 				return True

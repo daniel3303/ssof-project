@@ -74,6 +74,9 @@ class Stack:
 			newFrame.setPreviousFrame(currentFrame)
 		self.frames.append(newFrame)
 
+	def getCurrentFunctionName(self):
+		if self.getCurrentFrame() != None:
+			return self.getCurrentFrame().getFunctionName()
 
 	def popFrame(self):
 		if len(self.frames) < 1:
@@ -94,10 +97,10 @@ class Frame:
 		self.function = function
 		self.previousFrame = None
 
-	def setPreviousFrame(frame):
+	def setPreviousFrame(self, frame):
 		self.previousFrame = frame
 
-	def getPreviousFrame():
+	def getPreviousFrame(self):
 		return self.previousFrame
 
 	# given rbp+0x10 return variable at location
@@ -125,3 +128,6 @@ class Frame:
 	#Store a copy of the variables and remove this
 	def updateVarsAddress(self, newRBP):
 		self.function.updateVarsAddress(newRBP)
+
+	def getFunctionName(self):
+		return self.function.getName()

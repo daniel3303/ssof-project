@@ -17,7 +17,6 @@ class Executer:
 
 		if isinstance(instruction, Call):
 			self.executeCall(instruction)
-			print("\nCALL\n")
 		elif isinstance(instruction, Cmp):
 			self.executeCmp(instruction,)
 		elif isinstance(instruction, Je):
@@ -125,7 +124,6 @@ class Executer:
 
 
 	def executeCall(self, instruction):
-		print(self.isUserDefinedFunction(instruction.fName))
 		# TODO arguments are not passed properly from frame to frame
 		if self.isUserDefinedFunction(instruction.fName):
 			rawFunName = instruction.fName[1:-1]
@@ -254,7 +252,7 @@ class Executer:
 		return
 
 	def executeRet(self, instruction):
-		self.context.popFrame()
+		self.context.returnFromCurrentFunction()
 		return
 
 
