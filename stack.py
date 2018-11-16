@@ -68,6 +68,7 @@ class Stack:
 			return "rbp+" + offset
 
 	def pushFrame(self, function):
+		currentFrame = self.getCurrentFrame()
 		self.frames.append(Frame(function))
 
 	def popFrame(self):
@@ -76,7 +77,9 @@ class Stack:
 		return self.frames.pop()
 
 	def getCurrentFrame(self):
-		return self.frames[-1]
+		if len(self.frames) > 0:
+			return self.frames[-1]
+		return None
 
 # Represents a Stack Frame
 class Frame:
@@ -85,6 +88,10 @@ class Frame:
 		if not issubclass(function.__class__, Function):
 			raise Exception("Invalid argument. @param function must be an instace of Function.")
 		self.function = function
+		self.previousFrame = None
+
+	def setPreviousFrame(frame):
+		self.previousFrame = frame
 
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
