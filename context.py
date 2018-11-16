@@ -7,6 +7,9 @@ class Context:
 		self.functions = {}
 		self.vulnerabilities = []
 
+		# Flag for jumps, set to either 0 or 1
+		self.ZF = 0  
+
 		# The starting point
 		self.currentFunction = "main"
 
@@ -30,6 +33,7 @@ class Context:
 			'rax': "0x0",
 			'r13': "0x0"
 		}
+
 
 	def getRegisters(self):
 		return self.registers
@@ -89,5 +93,5 @@ class Context:
 	def getCurrentVariables(self):
 		return self.functions[self.currentFunction].variables
 
-	def isFunctionArgument(location):
+	def isFunctionArgument(self,location):
 		return location in ["rdi","rsi","rdx","rcx","r8","r9"]
