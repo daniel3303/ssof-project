@@ -9,6 +9,8 @@ class Variable:
 		self.value = ""
 		self.isNullTerminated = True
 		self.ownerFrame = None 
+		# when we access a variable from a previous frame, make sure it was passed in
+		self.passedAsArgumentToNextFrame = False 
 
 	def getName(self):
 		return self.name

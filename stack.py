@@ -66,7 +66,10 @@ class Stack:
 		previousFrame = self.getCurrentFrame().previousFrame
 		if previousFrame != None:
 			for prevVar in previousFrame.function.variables:
-				if "rbp"+prevVar.address in address:
+				# if the previous frame passed arguments to next frame(this)
+				# then access that by using the relative rbp address retrieved from a register
+				# and using that as a index for the previous frame's variables that were passed
+				if prevVar.passedAsArgumentToNextFrame == True and "rbp"+prevVar.address in address:
 					return prevVar
 
 		return self.getCurrentFrame().getVariableByAddress(address)

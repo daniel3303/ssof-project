@@ -97,6 +97,7 @@ class Context:
 		localVarsThatAreArgs = self.getListOfVariablesInArgumentRegisters()
 		for var in localVarsThatAreArgs:
 			var.ownerFrame = self.stack.getCurrentFrame()
+			var.passedAsArgumentToNextFrame = True
 
 		self.currentFunction = functionName
 		#self.pushFrame(self.functions[functionName])
@@ -113,14 +114,14 @@ class Context:
 
 	def isRegisterValueALocalVarAddress(self, address):
 		for var in self.stack.getCurrentFrame().function.variables:
-			return var.assemblyAddress == address
+			if var.assemblyAddress == address:
+				return True
 				
 	#Returns from current function
 	def returnFromCurrentFunction(self):
 		returningFrom = self.stack.getCurrentFunctionName()
-		
 		self.popFrame()
-		self.currentFunction = self.stack.getCurrentFunctionName()
+		self.currentFunction = returningFrom
 
 
 	def isUserDefinedFunction(self, functionName):
