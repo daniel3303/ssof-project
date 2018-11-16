@@ -51,7 +51,7 @@ class Function:
 	def isAddressUnassignedStackAddress(self, address):
 		unRange = self.getUnassignedStackAddressRange()
 		if unRange != None and len(unRange) > 0:
-			return address >= unRange[0] and address < unRange[1]
+			return int(address,16) >= unRange[0] and int(address,16) < unRange[1]
 
 
 	def getVariables(self):

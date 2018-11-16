@@ -68,27 +68,31 @@ class StackCorruption(Vulnerability):
 		return jsonData
 
 class DirectInvalidAccess(Vulnerability):
-	def __init__(self, function, address, overflownAddress):
+	def __init__(self, function, address, overflownAddress, op):
 		Vulnerability.__init__(self,  function, address, "", "")
 		self.overflownAddress = overflownAddress
+		self.op = op
 
 	def toJSON(self):
 		jsonData = Vulnerability.toJSON(self)
 		jsonData['vulnerability'] = 'INVALIDACCS'
 		jsonData['overflown_address'] = self.overflownAddress
+		jsonData['op'] = self.op
 		del jsonData['fnname']
 		del jsonData['overflow_var']
 		return jsonData
 
 class DirectStackCorruption(Vulnerability):
-	def __init__(self, function, address, overflownAddress):
+	def __init__(self, function, address, overflownAddress, op):
 		Vulnerability.__init__(self,  function, address, "", "")
 		self.overflownAddress = overflownAddress
+		self.op = op
 
 	def toJSON(self):
 		jsonData = Vulnerability.toJSON(self)
 		jsonData['vulnerability'] = 'SCORRUPTION'
 		jsonData['overflown_address'] = self.overflownAddress
+		jsonData['op'] = self.op
 		del jsonData['fnname']
 		del jsonData['overflow_var']
 		return jsonData

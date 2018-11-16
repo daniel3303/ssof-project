@@ -80,11 +80,11 @@ class Executer:
 				# addr does not belong to a variable then:
 				# invalid access
 				if self.destinationAddrIsUnassignedStackMemory(destAddr):
-					vuln = DirectInvalidAccess(self.currentFunction.name, instruction.dest, "rbp-" + hex(destAddr))
+					vuln = DirectInvalidAccess(self.currentFunction.name, instruction.address, "rbp" +destAddr, instruction.op)
 					self.saveVulnerability(vuln)
 				# scorruption
-				if destAddr >= 16:
-					vuln = DirectStackCorruption(self.currentFunction.name, instruction.dest, "rbp+" + hex(destAddr))
+				if int(destAddr,16) >= 16:
+					vuln = DirectStackCorruption(self.currentFunction.name, instruction.address, "rbp+" + destAddr, instruction.op)
 					self.saveVulnerability(vuln)
 
 	
