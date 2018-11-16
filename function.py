@@ -22,14 +22,15 @@ class Function:
 			instruction.accept(executer)
 		context.popFrame()
 
-	def getSortedListOfVariablesByAddress(self):
+
+	""" def getSortedListOfVariablesByAddress(self):
 		tempVarList = self.variables[:] # copy, not reference
 		sortedVars = []
 		numVarsSorted = 0
 		while numVarsSorted < len(self.variables):
 			varWithHighestAddr = tempVarList[0]
 			for var2 in tempVarList:
-				if var2.address >= varWithHighestAddr.address:
+				if int(var2.address,16) >= int(varWithHighestAddr.address,16):
 					varWithHighestAddr = var2
 
 			sortedVars.append(varWithHighestAddr)
@@ -37,17 +38,18 @@ class Function:
 			numVarsSorted+=1
 
 		return sortedVars
-
+ """
 	# search for the first unassigned stack address after startAddress
 	def getFirstUnassignedStackAddressAfterAddress(self, startAddress):
 		if len(self.variables) == 0: return
-		sortedVars = self.getSortedListOfVariablesByAddress()
+		#sortedVars = self.getSortedListOfVariablesByAddress()
+		sortedVars = sorted(self.variables, key=lambda x: int(x.address,16), reverse=False)
 
 		for idx, var in enumerate(sortedVars):
 			# if there exists a var after this one
 			if idx < len(sortedVars)-1:
-				nextAddress = -int(var.address,16) + var.size
-				if nextAddress == sortedVars[idx+1].address:
+				nextAddress = int(var.address,16) + var.size
+				if nextAddress == int(sortedVars[idx+1].address,16):
 					continue
 				else:
 					return nextAddress

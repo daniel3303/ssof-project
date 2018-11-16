@@ -72,7 +72,7 @@ for name in inFiles:
 		print("TEST PASS: " + name)
 		testPassCtr+=1
 	else:
-		print("TEST FAIL: " + name)
+		print(bcolors.FAIL + "TEST FAIL: " + name + bcolors.ENDC)
 	print("#----------------------------------------------------#\n\n")
 
 

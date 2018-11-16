@@ -2,6 +2,7 @@
 from vulnerabilities import *
 from instructions import *
 import re
+import math
 
 class Executer:
 
@@ -72,10 +73,10 @@ class Executer:
 		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
 		if "fgets" in instruction.fName:
 			maxDataSize = int(self.getFunctionArgumentByIndex(1), 16)
-			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "fgets", instruction.address)
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "fgets", instruction.address)
 			return
 		elif "gets" in instruction.fName:
 			maxDataSize = float("inf")
@@ -85,11 +86,10 @@ class Executer:
 			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize
-			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcpy", instruction.address)
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize
-			#self.classifyInvalidAccessVulnerability(destVar, sourceVar)
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcpy", instruction.address)
 			return
 		# the nullterminator of destination is overwriten by the first character of source, and the null terminator is appended at the end, so final size is sum of lens
 		elif "strcat" in instruction.fName:
@@ -160,9 +160,9 @@ class Executer:
 			for i in range(1,formatInputCount): # skip format string
 				variableAddress = self.getFunctionArgumentByIndex(i)
 				destVar = self.context.getVariableByAddress(destVarAddress)
-				dataSize = float(inf)
+				dataSize = math.inf
 				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "scanf", instruction.address)
-				destVar.effectiveSize = float(inf)
+				destVar.effectiveSize = math.inf
 			return
 
 		elif "fscanf" in instruction.fName:
@@ -171,9 +171,9 @@ class Executer:
 			for i in range(2,formatInputCount): # skip file register and format string
 				variableAddress = self.getFunctionArgumentByIndex(i)
 				destVar = self.context.getVariableByAddress(destVarAddress)
-				dataSize = float(inf) # file can contain "infinite" data
+				dataSize = math.inf # file can contain "infinite" data
 				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "fscanf", instruction.address)
-				destVar.effectiveSize = float(inf)
+				destVar.effectiveSize = math.inf
 			return
 
 		# TODO CALL other functions and argument passing
@@ -227,7 +227,7 @@ class Executer:
 	def countFormatStringInputsFromFormatString(self, formatString):
 		# TODO make sure formatString is a string type from where you get it!
 		if isinstance(formatString , str):
-			registerCount = formatString.count('%s')
+			return formatString.count('%s')
 
 	def getFunctionArgumentByIndex(self, index):
 		return self.context.getValue(self.argRegisterPassOrder[index])

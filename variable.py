@@ -9,7 +9,7 @@ class Variable:
 		self.value = ""
 
 	def getName(self):
-		return self.name;
+		return self.name
 
 	def getType(self):
 		return self.type

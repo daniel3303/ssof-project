@@ -84,7 +84,7 @@ class Frame:
 
 	def __init__(self, function):
 		if not issubclass(function.__class__, Function):
-			raise Error("Invalid argument. @param function must be an instace of Function.")
+			raise Exception("Invalid argument. @param function must be an instace of Function.")
 		self.function = function
 
 	# given rbp+0x10 return variable at location

@@ -43,7 +43,6 @@ class Context:
 	def isRegister(self, name):
 		return name in self.registers
 
-
 	def getCurrentFunction(self):
 		return self.functions[self.currentFunction]
 
@@ -58,8 +57,9 @@ class Context:
 
 	def printRegisters(self):
 		string = "Registers: "
-		registers = self.stack.getRegisters()
+		registers = self.getRegisters()
 		for key in registers:
+			print(string, end='')
 			print("key:{} value:{}".format(key, registers[key]))
 
 	def getstack(self):
