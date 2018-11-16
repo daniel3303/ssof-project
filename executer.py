@@ -49,8 +49,9 @@ class Executer:
 		# Makes a mov operation where the value to copy is a value on the stack
 		# TODO this is broken, never is considered as stack adress, and if it is, the getValue returns None
 		elif self.context.isStackAddress(instruction.value):
-			value = self.context.getValue(instruction)
-			self.context.setValue(instruction.dest, value)
+			rawDestAddr = instruction.value[instruction.value.find('[rbp')+1:-1]
+			value = self.context.getValue(rawDestAddr)
+			self.context.setValue(rawDestAddr, value)
 
 		# Makes a mov operation where the value to copy is a literal
 		else:
@@ -107,7 +108,20 @@ class Executer:
 		self.context.setValue(instruction.dest, instruction.value[1:-1])
 		return
 
+	def isUserDefinedFunction(self, fname):
+		functions = self.context.functions
+		for fun in functions:
+			if fname == "<"+fun+">":
+				return True
+
+
 	def executeCall(self, instruction):
+		# TODO arguments are not passed properly from frame to frame
+		if self.isUserDefinedFunction(instruction.fName):
+			rawFunName = instruction.fName[1:-1]
+			# TODO calling other funcs here
+			#self.context.functions[rawFunName].execute(self.context)
+
 		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
 		if "fgets" in instruction.fName:
 			maxDataSize = int(self.getFunctionArgumentByIndex(1), 16)
@@ -173,10 +187,10 @@ class Executer:
 		##### advanced
 
 		elif "read" in instruction.fName:
-			destVarAddress = self.getFunctionArgumentByIndex(0)
+			destVarAddress = self.getFunctionArgumentByIndex(1)
 			destVar = self.context.getVariableByAddress(destVarAddress)
-			maxDataSize = int(self.getFunctionArgumentByIndex(1),16)
-			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "read", instruction.address)
+			maxDataSize = int(self.getFunctionArgumentByIndex(2),16)
+			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(1), "read", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
 
@@ -293,10 +307,10 @@ class Executer:
 				if variable.name != destVar.name and int(variable.address,16) < endOfOverflowAddress and int(variable.address,16) > int(destVar.address,16):
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
 					self.saveVulnerability(vuln1)
-			if endOfOverflowAddress >= 0:
+			if endOfOverflowAddress > 0: # excludes endOfOVerflowAddress, border case
 				vuln2 = RBPOverflow(self.currentFunction.name, faddress, fname, destVar.name)
 				self.saveVulnerability(vuln2)
-				if endOfOverflowAddress >= 4:
+				if endOfOverflowAddress > 4: # excludes endOfOVerflowAddress, border case
 					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destVar.name)
 					self.saveVulnerability(vuln3)
 
