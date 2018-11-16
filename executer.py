@@ -58,18 +58,19 @@ class Executer:
 			self.context.setValue(instruction.dest, instruction.value)
 
 		# TODO this is broken atm
-		#self.validateDirectAccess(instruction)
+		self.validateDirectAccess(instruction)
 
 	# TODO not working properly, destAddr for stack corruption is always positive and invalid access not being detected 
 	def validateDirectAccess(self, instruction):
 		if self.context.isStackAddress(instruction.dest):
 			## DIRECT WRITE ACCESS
 			# parse the actual address
-			destAddr = int(instruction.dest[instruction.dest.find('[rbp')+5:-1],16)
+			destAddr = instruction.dest[instruction.dest.find('[rbp')+4:-1]
 			variable = self.getVariableContainingAddr(destAddr)
 			if variable != None:
-				if instruction.value == '\0':
+				if instruction.value == '0x0':
 					variable.isNullTerminated = True
+					variable.effectiveSize = -(int(variable.address,16) - int(destAddr,16))
 				else:
 					# if we're setting the last element of a variable if array to something thats not '\0'
 					# then this removes the nullterminator, possibly causing overflow with strcpy for example
@@ -79,23 +80,23 @@ class Executer:
 				# addr does not belong to a variable then:
 				# invalid access
 				if self.destinationAddrIsUnassignedStackMemory(destAddr):
-					vuln = DirectInvalidAccess(self.currentFunction.name, instruction.dest, "rbp-" + hex(destAddr))
+					vuln = DirectInvalidAccess(self.currentFunction.name, instruction.address, "rbp" +destAddr, instruction.op)
 					self.saveVulnerability(vuln)
 				# scorruption
-				if destAddr >= 16:
-					vuln = DirectStackCorruption(self.currentFunction.name, instruction.dest, "rbp+" + hex(destAddr))
+				if int(destAddr,16) >= 16:
+					vuln = DirectStackCorruption(self.currentFunction.name, instruction.address, "rbp+" + destAddr, instruction.op)
 					self.saveVulnerability(vuln)
 
 	
 	def getVariableContainingAddr(self, addr):
 		variables = self.context.getCurrentVariables()
 		for var in variables:
-			if addr >= int(var.address,16) and addr < int(var.address, 16) + var.size:
+			if int(addr,16) >= int(var.address,16) and int(addr,16) < int(var.address, 16) + var.size:
 				return var
 		return None		
 
 	def destinationIsLastPositionOfVariable(self, addr, variable):
-		return addr == int(variable.address, 16) + variable.size - 1
+		return int(addr,16) == int(variable.address, 16) + variable.size - 1
 
 	def destinationAddrIsUnassignedStackMemory(self, addr):
 		curFunction = self.context.getCurrentFunction()
