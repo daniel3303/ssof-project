@@ -56,7 +56,7 @@ class Function:
 
 	def isVariableBaseAddress(self, address):
 		for var in self.variables:
-			if(var.address == address):
+			if(var.assemblyAddress == address):
 				return True
 		return False
 

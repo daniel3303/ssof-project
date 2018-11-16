@@ -86,6 +86,8 @@ class Executer:
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcpy", instruction.address)
+			destVarAddress = self.getFunctionArgumentByIndex(0)
+			destVar = self.context.getVariableByAddress(destVarAddress)
 			destVar.effectiveSize = maxDataSize
 			return
 		# the nullterminator of destination is overwriten by the first character of source, and the null terminator is appended at the end, so final size is sum of lens
