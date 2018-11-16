@@ -32,7 +32,6 @@ class Function:
 					varWithHighestAddr = var2
 
 			sortedVars.append(varWithHighestAddr)
-			print("added sorted Var: {}".format(varWithHighestAddr.address))
 			tempVarList.remove(varWithHighestAddr)
 			numVarsSorted+=1
 
@@ -41,17 +40,12 @@ class Function:
 	# search for the first unassigned stack address after startAddress
 	def getFirstUnassignedStackAddressAfterAddress(self, startAddress):
 		if len(self.variables) == 0: return
-		print("###############getFirstUnassignedStackAddress")
-		print("startAddress given: {}".format(startAddress))
 		sortedVars = self.getSortedListOfVariablesByAddress()
 		
-
 		for idx, var in enumerate(sortedVars):
 			# if there exists a var after this one
 			if idx < len(sortedVars)-1:
-				print("int var address {}, var size to add: {} ".format(var.address, var.size))
 				nextAddress = -int(var.address,16) + var.size
-				print("idx: {} , nextAddr: {}, varsize: {}".format(idx, nextAddress, var.size))
 				if nextAddress == sortedVars[idx+1].address: 
 					continue
 				else:

@@ -88,7 +88,7 @@ class Stack:
 
 	def convertToRelativeAddress(self, absoluteAddress):
 		offset = int(absoluteAddress, 16) - int(self.registers["rbp"], 16)
-		offest = hex(offset)
+		offset = hex(offset)
 		if(offset[0] == "-"):
 			return "rbp" + offset
 		else:
@@ -118,7 +118,6 @@ class Frame:
 	def getVariableByAddress(self, address):
 		for var in self.function.variables:
 			if address >= var.getAssemblyAddress() and address < var.getAssemblyAddress() + var.getSize():
-				print(var.name)
 				return var
 
 	def getVariables(self):

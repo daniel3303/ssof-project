@@ -12,7 +12,6 @@ class Executer:
 		
 	# "Overloading"
 	def visit(self, instruction):
-		print("#-- EXECUTING OPERATION: "+str(instruction.op)+" --#")
 		self.currentFunction = self.context.getCurrentFunction()
 
 		if isinstance(instruction, Call):
@@ -41,7 +40,6 @@ class Executer:
 	# :::::::: execute methods ::::::::::
 
 	def executeMov(self, instruction):
-		print("executing move source: {} target: {}".format(instruction.value, instruction.dest))
 
 		# Makes a mov operation where the value to copy is a register
 		if self.context.isRegister(instruction.value):
@@ -71,11 +69,9 @@ class Executer:
 		return
 
 	def executeCall(self, instruction):
-		print("executing call, instruction name: {}".format(instruction.fName))
 		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
 		if "fgets" in instruction.fName: 
 			maxDataSize = int(self.getFunctionArgumentByIndex(1), 16)
-			print("fgets max data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "fgets", instruction.address)
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
@@ -83,14 +79,12 @@ class Executer:
 			return
 		elif "gets" in instruction.fName:
 			maxDataSize = float("inf")
-			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "gets", instruction.address)
 			return
 		elif "strcpy" in instruction.fName:
 			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = sourceVar.effectiveSize
-			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcpy", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
@@ -101,7 +95,6 @@ class Executer:
 			sourceVarAddress = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxDataSize = destVar.effectiveSize + sourceVar.effectiveSize # appends \0 at end but first \0 is overwritten
-			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcat", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
@@ -114,7 +107,6 @@ class Executer:
 			destAddr = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destAddr)
 			maxDataSize = min(maxSizeN, sourceVarSize)
-			print("data size {}".format(maxDataSize))
 			destVar.effectiveSize = maxDataSize
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strncpy", instruction.address)
 			destVar.effectiveSize = maxDataSize
@@ -127,7 +119,6 @@ class Executer:
 			sourceVar = self.context.getVariableByAddress(sourceVarAddress)
 			maxSizeN = int(self.getFunctionArgumentByIndex(2),16)
 			maxDataSize = destVar.effectiveSize + min(sourceVar.effectiveSize,maxSizeN)
-			print("data size {}".format(maxDataSize))
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strncat", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
@@ -252,7 +243,6 @@ class Executer:
 		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
 		if(dataSize > destVar.size): # TODO, check if works, changed from destVar.effectiveSize to destVar.size
 			endOfOverflowAddress = int(destVar.address,16) + dataSize
-			print("end of overflow address = {}".format(endOfOverflowAddress))
 			for variable in self.context.getVariables():
 				if variable.name != destVar.name and int(variable.address,16) < endOfOverflowAddress and int(variable.address,16) > int(destVar.address,16):
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
@@ -268,18 +258,15 @@ class Executer:
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
 		if dataSize > destVar.size:
-			endOfOverflowAddress = -int(destVar.address, 16) + dataSize
-			overflowRange = [-int(destVar.address, 16), endOfOverflowAddress]
-			print("overflowrange: {}".format(overflowRange))
+			endOfOverflowAddress = int(destVar.address, 16) + dataSize
+			overflowRange = [int(destVar.address, 16)+destVar.size, endOfOverflowAddress]
 			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0]) 
-			print("unassigned address first {}".format(unAddr))
 			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
-				outAddressRelativeToRbp = "rbp"+hex(unAddr) if unAddr < 0 else "rbp+"+hex(unAddr)
+				outAddressRelativeToRbp = self.context.stack.convertToRelativeAddress(hex(overflowRange[0]))
 				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
 				self.context.vulnerabilities.append(vuln1)
 
 			if endOfOverflowAddress >= 16: # if writes over 0x10
-				print("scorruption endOfOverflowAddress : {}".format(endOfOverflowAddress))
 				# TODO , finding this address of SCORRUPTION maybe with the stack?
 				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, "rbp+"+"0x10")
 				self.context.vulnerabilities.append(vuln2)
