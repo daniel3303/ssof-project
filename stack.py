@@ -50,7 +50,7 @@ class Stack:
 	def getVariableByAddress(self, address):
 		if(not self.isRelativeAddress(address)):
 			address = self.convertToRelativeAddress(address)
-		return self.frames[-1].getVariableByAddress(address)
+		return self.getCurrentFrame().getVariableByAddress(address)
 
 	def convertToAbsoluteAddress(self, relAddress):
 		register = relAddress[0:3]

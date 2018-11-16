@@ -17,6 +17,7 @@ class Executer:
 
 		if isinstance(instruction, Call):
 			self.executeCall(instruction)
+			print("\nCALL\n")
 		elif isinstance(instruction, Cmp):
 			self.executeCmp(instruction,)
 		elif isinstance(instruction, Je):
@@ -37,6 +38,9 @@ class Executer:
 			self.executeRet(instruction)
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction)
+
+		self.context.printRegisters()
+		print("\n\n")
 
 	# :::::::: execute methods ::::::::::
 
@@ -60,7 +64,7 @@ class Executer:
 		# TODO this is broken atm
 		self.validateDirectAccess(instruction)
 
-	# TODO not working properly, destAddr for stack corruption is always positive and invalid access not being detected 
+	# TODO not working properly, destAddr for stack corruption is always positive and invalid access not being detected
 	def validateDirectAccess(self, instruction):
 		if self.context.isStackAddress(instruction.dest):
 			## DIRECT WRITE ACCESS
@@ -75,7 +79,7 @@ class Executer:
 					# if we're setting the last element of a variable if array to something thats not '\0'
 					# then this removes the nullterminator, possibly causing overflow with strcpy for example
 					if self.destinationIsLastPositionOfVariable(destAddr, variable):
-						variable.isNullTerminated = False 
+						variable.isNullTerminated = False
 			else:
 				# addr does not belong to a variable then:
 				# invalid access
@@ -87,13 +91,13 @@ class Executer:
 					vuln = DirectStackCorruption(self.currentFunction.name, instruction.address, "rbp+" + destAddr, instruction.op)
 					self.saveVulnerability(vuln)
 
-	
+
 	def getVariableContainingAddr(self, addr):
 		variables = self.context.getCurrentVariables()
 		for var in variables:
 			if int(addr,16) >= int(var.address,16) and int(addr,16) < int(var.address, 16) + var.size:
 				return var
-		return None		
+		return None
 
 	def destinationIsLastPositionOfVariable(self, addr, variable):
 		return int(addr,16) == int(variable.address, 16) + variable.size - 1
@@ -159,7 +163,7 @@ class Executer:
 			return
 
 		elif "strncpy" in instruction.fName:
-			maxSizeN = int(self.getFunctionArgumentByIndex(2),16) 
+			maxSizeN = int(self.getFunctionArgumentByIndex(2),16)
 			sourceAddr = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceAddr)
 			sourceVarSize = sourceVar.effectiveSize
@@ -246,6 +250,7 @@ class Executer:
 		return
 
 	def executeRet(self, instruction):
+		self.context.popFrame()
 		return
 
 
@@ -321,7 +326,7 @@ class Executer:
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
 		if dataSize > destVar.size:
-			endOfOverflowAddress = int(destVar.address, 16) + dataSize 
+			endOfOverflowAddress = int(destVar.address, 16) + dataSize
 			overflowRange = [int(destVar.address, 16)+destVar.size, endOfOverflowAddress]
 			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0])
 			if unAddr != None and unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
@@ -337,4 +342,3 @@ class Executer:
 	def saveVulnerability(self, vulnerability):
 		if vulnerability not in self.context.vulnerabilities: # TODO filter duplicates? need to check later
 			self.context.vulnerabilities.append(vulnerability)
-

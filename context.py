@@ -89,3 +89,5 @@ class Context:
 	def getCurrentVariables(self):
 		return self.functions[self.currentFunction].variables
 
+	def isFunctionArgument(location):
+		return location in ["rdi","rsi","rdx","rcx","r8","r9"]
