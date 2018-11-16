@@ -91,3 +91,13 @@ class Context:
 
 	def isFunctionArgument(location):
 		return location in ["rdi","rsi","rdx","rcx","r8","r9"]
+
+	def callFunction(self, functionName):
+		print("CALLING FUNCTION: "+functionName)
+
+	def isUserDefinedFunction(self, functionName):
+		print(functionName)
+		for function in self.functions.keys():
+			if function == functionName:
+				return True
+		return False

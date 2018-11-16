@@ -119,12 +119,12 @@ class Executer:
 		return
 
 	def isUserDefinedFunction(self, fname):
-		return self.context.isUserDefinedFunction()
-		return "<"+fname+">" in self.context.functions
+		fname = fname[1:-1]
+		return self.context.isUserDefinedFunction(fname)
+		#return "<"+fname+">" in self.context.functions isto não funciona assim
 
 
 	def executeCall(self, instruction):
-		print(instruction.fName)
 		print(self.isUserDefinedFunction(instruction.fName))
 		# TODO arguments are not passed properly from frame to frame
 		if self.isUserDefinedFunction(instruction.fName):
