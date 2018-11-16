@@ -63,7 +63,7 @@ class Stack:
 		return value
 
 	def isRelativeAddress(self, location):
-		return isinstance(location, basestring) and "rbp" in location
+		return isinstance(location, str) and "rbp" in location
 
 	def getRBPOffset(self, memPos):
 		return memPos[memPos.find('[rbp')+5:memPos.find(']')]
@@ -108,12 +108,12 @@ class Stack:
 
 
 class Frame:
-	
+
 	def __init__(self, function):
 		if not issubclass(function.__class__, Function):
 			raise Error("Invalid argument. @param function must be an instace of Function.")
 		self.function = function
-		
+
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
 		for var in self.function.variables:

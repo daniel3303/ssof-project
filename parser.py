@@ -1,8 +1,3 @@
-
-##### PYTHON 2.X #####
-##### PYTHON 2.X #####
-##### PYTHON 2.X #####
-
 import sys
 import json
 from function import Function
@@ -19,26 +14,30 @@ class Parser:
 	def loadCode(self, fileName):
 		with open(fileName) as inputFile:
 			self.code = json.load(inputFile)
-			
-	
+
+
 	def parse(self):
 		context = Context()
 		for fnName, fnData in self.code.items():
 			function = Function(fnName)
 			variables = self.code[fnName]["variables"]
 			instructions = self.code[fnName]["instructions"]
-			
+
 			for variable in variables:
 				function.addVariable(self.variableFactory.constructFromJson(variable))
 
 			for instruction in instructions:
 				function.addInstruction(self.instructionFactory.constructFromJson(instruction))
-			
+
 			context.addFunction(function)
 		return context
 
 
 if __name__ == "__main__":
+	if sys.version_info[0] < 3:
+    	raise Exception("You must be using Python 3 to execute this program.")
+
+
 	if len(sys.argv) != 2:
 		print("Invalid number of parameters, usage:");
 		print("  python " + sys.argv[0] + " <program>.json");
@@ -60,9 +59,3 @@ if __name__ == "__main__":
 		vulnerabilitiesJSON.append(vuln.toJSON())
 
 	print(json.dumps(vulnerabilitiesJSON, indent=4, separators=(',', ': ')))
-
-
-
-
-
-

@@ -9,7 +9,7 @@ class Executer:
 		self.context = context
 		# helper array containing the order of how arguments are passed to functions in 64 bits
 		self.argRegisterPassOrder = ['rdi','rsi','rdx','rcx','r8','r9']
-		
+
 	# "Overloading"
 	def visit(self, instruction):
 		self.currentFunction = self.context.getCurrentFunction()
@@ -65,12 +65,12 @@ class Executer:
 	def executeLea(self, instruction):
 		# the [1:-1] removes brackets
 		# because lea is an exception to bracket semantics: https://stackoverflow.com/a/25824111/7126027
-		self.context.setValue(instruction.dest, instruction.value[1:-1]) 
+		self.context.setValue(instruction.dest, instruction.value[1:-1])
 		return
 
 	def executeCall(self, instruction):
 		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
-		if "fgets" in instruction.fName: 
+		if "fgets" in instruction.fName:
 			maxDataSize = int(self.getFunctionArgumentByIndex(1), 16)
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "fgets", instruction.address)
 			destVarAddress = self.getFunctionArgumentByIndex(0)
@@ -89,7 +89,7 @@ class Executer:
 			destVar.effectiveSize = maxDataSize
 			return
 		# the nullterminator of destination is overwriten by the first character of source, and the null terminator is appended at the end, so final size is sum of lens
-		elif "strcat" in instruction.fName: 
+		elif "strcat" in instruction.fName:
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			sourceVarAddress = self.getFunctionArgumentByIndex(1)
@@ -98,7 +98,7 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strcat", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
-		
+
 		elif "strncpy" in instruction.fName:
 			maxSizeN = int(self.getFunctionArgumentByIndex(2),16)
 			sourceAddr = self.getFunctionArgumentByIndex(1)
@@ -111,7 +111,7 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strncpy", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
-		
+
 		elif "strncat" in instruction.fName:
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
@@ -125,7 +125,7 @@ class Executer:
 
 		##### advanced
 
-		# TODO test read is working 
+		# TODO test read is working
 		elif "read" in instruction.fName:
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
@@ -150,7 +150,7 @@ class Executer:
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "sprintf", instruction.address)
 			destVar.effectiveSize = maxDataSize
 			return
-		
+
 		elif "_scanf" in instruction.fName:
 			formatString = self.getFunctionArgumentByIndex(0)
 			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
@@ -216,15 +216,15 @@ class Executer:
 
 
 	def isMemoryPosition(self, memPos):
-		return isinstance(memPos, basestring) and "WORD PTR" in memPos
+		return isinstance(memPos, str) and "WORD PTR" in memPos
 
 		# TODO CALL other functions and argument passing
 		# consider direct access like a[10] = 20
 
 	def countFormatStringInputsFromFormatString(self, formatString):
 		# TODO make sure formatString is a string type from where you get it!
-		if isinstance(formatString , basestring):
-			registerCount = formatString.count('%s') 
+		if isinstance(formatString , str):
+			registerCount = formatString.count('%s')
 
 	def getFunctionArgumentByIndex(self, index):
 		return self.context.getValue(self.argRegisterPassOrder[index])
@@ -260,7 +260,7 @@ class Executer:
 		if dataSize > destVar.size:
 			endOfOverflowAddress = int(destVar.address, 16) + dataSize
 			overflowRange = [int(destVar.address, 16)+destVar.size, endOfOverflowAddress]
-			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0]) 
+			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0])
 			if unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
 				outAddressRelativeToRbp = self.context.stack.convertToRelativeAddress(hex(overflowRange[0]))
 				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
