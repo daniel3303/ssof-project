@@ -114,10 +114,7 @@ class Executer:
 		return
 
 	def isUserDefinedFunction(self, fname):
-		functions = self.context.functions
-		for fun in functions:
-			if fname == "<"+fun+">":
-				return True
+		return "<"+fname+">" in self.context.functions
 
 
 	def executeCall(self, instruction):
@@ -229,12 +226,12 @@ class Executer:
 
 		elif "__isoc99_fscanf" in instruction.fName:
 			formatString = self.getFunctionArgumentByIndex(1)
-			formatInputCount = self.countFormatStringInputsFromFormatString(instruction.obs)
-			for i in range(2,formatInputCount): # skip file register and format string
-				variableAddress = self.getFunctionArgumentByIndex(i)
+			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			for i in range(0,formatInputCount): # skip file register and format string
+				destVarAddress = self.getFunctionArgumentByIndex(i+2) #+2 skip file and format str
 				destVar = self.context.getVariableByAddress(destVarAddress)
 				dataSize = math.inf # file can contain "infinite" data
-				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "__isoc99_fscanf", instruction.address)
+				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i+2), "__isoc99_fscanf", instruction.address)
 				destVar.effectiveSize = math.inf
 			return
 

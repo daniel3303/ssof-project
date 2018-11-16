@@ -89,7 +89,7 @@ class Frame:
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
 		for var in self.function.variables:
-			if address >= var.getAssemblyAddress() and address < var.getAssemblyAddress() + var.getSize():
+			if address == var.getAssemblyAddress():
 				return var
 
 	#FIXME store a copy of the variables
