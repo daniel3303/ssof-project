@@ -28,6 +28,7 @@ class Function:
 		sortedVars = sorted(self.variables, key=lambda x: int(x.address,16), reverse=False)
 
 		for idx, var in enumerate(sortedVars):
+			nextAddress = int(var.address, 16) + var.size
 			# if there exists a var after this one
 			if idx < len(sortedVars)-1:
 				nextAddress = int(var.address,16) + var.size
