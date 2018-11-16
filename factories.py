@@ -2,12 +2,13 @@ from variable import Variable
 from instructions import *
 
 class VariableFactory:
-	
+	# This constructs python objects representing variables from the JSON input file
 	def constructFromJson(self, jsonObject):
 		return Variable(jsonObject["name"], jsonObject["type"], jsonObject["bytes"], jsonObject["address"])
 
 class InstructionFactory:   
 
+	# This constructs python objects representing instructions from the JSON input file
 	def constructFromJson(self, jsonObject):
 		# for this program we can consider 32 bit registers as 64 bit ones
 		if "args" in jsonObject and "dest" in jsonObject["args"]:

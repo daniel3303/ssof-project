@@ -1,5 +1,6 @@
 import json
 
+# base vulnerability class
 class Vulnerability:
 	def __init__(self, function, address, fnname, overflowVar):
 		self.function = function
@@ -44,7 +45,6 @@ class RetOverflow(Vulnerability):
 		jsonData['vulnerability'] = 'RETOVERFLOW'
 		return jsonData
 
-# Advanced
 class InvalidAccess(Vulnerability):
 	def __init__(self, function, address, fnname, overflowVar, overflownAddress):
 		Vulnerability.__init__(self,  function, address, fnname, overflowVar)
@@ -67,6 +67,7 @@ class StackCorruption(Vulnerability):
 		jsonData['overflown_address'] = self.overflownAddress
 		return jsonData
 
+# invalid access vulnerability causepossibled by direct write access
 class DirectInvalidAccess(Vulnerability):
 	def __init__(self, function, address, overflownAddress, op):
 		Vulnerability.__init__(self,  function, address, "", "")
@@ -82,6 +83,7 @@ class DirectInvalidAccess(Vulnerability):
 		del jsonData['overflow_var']
 		return jsonData
 
+# stack corruption vulnerability possible by direct write access
 class DirectStackCorruption(Vulnerability):
 	def __init__(self, function, address, overflownAddress, op):
 		Vulnerability.__init__(self,  function, address, "", "")

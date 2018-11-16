@@ -100,7 +100,6 @@ class Context:
 			var.passedAsArgumentToNextFrame = True
 
 		self.currentFunction = functionName
-		#self.pushFrame(self.functions[functionName])
 		self.functions[functionName].execute(self)
 
 	# returns a list of variables that are saved in the first 6 registers
@@ -131,6 +130,7 @@ class Context:
 		self.currentFunction = returningFrom
 
 
+	# is the function defined in the code by the programmer, ex: fun1, fun2...
 	def isUserDefinedFunction(self, functionName):
 		for function in self.functions.keys():
 			if function == functionName:

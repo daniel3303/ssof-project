@@ -89,7 +89,7 @@ class Executer:
 					vuln = DirectStackCorruption(self.currentFunction.name, instruction.address, "rbp+" + destAddr, instruction.op)
 					self.saveVulnerability(vuln)
 
-
+	# get the variable that contains this address addr
 	def getVariableContainingAddr(self, addr):
 		variables = self.context.getCurrentVariables()
 		for var in variables:
@@ -97,6 +97,7 @@ class Executer:
 				return var
 		return None
 
+	# check if last position of variable is addr, to check if we are null terminating or not a array
 	def destinationIsLastPositionOfVariable(self, addr, variable):
 		return int(addr,16) == int(variable.address, 16) + variable.size - 1
 
@@ -244,10 +245,10 @@ class Executer:
 			return
 
 
-	def executeLeave(self, instruction):
+	def executeLeave(self, instruction): # locals are cleared when we pop the frame of the function that we're returning from
 		return
 
-	def executePush(self, instruction):
+	def executePush(self, instruction): # we dont keep track of stack pointer
 		return
 
 	def executeRet(self, instruction):
@@ -262,8 +263,7 @@ class Executer:
 		#TODO, although we dont keep track of stack pointer, just incase
 		return
 
-	# missing some, like Nop that was deleted, was it really necessary?
-	# for nop, it updates stack pointer by 4, but we dont track the stack pointer....
+	# ZF is the zero flag, used for jumps
 
 	def executeCmp(self, instruction):
 		# are they registers or stack memory positions?
@@ -297,6 +297,7 @@ class Executer:
 		targetInst = curFunc.getInstructionByAddress(instAddress)
 		self.jumpFromPosToPos(currentInstruction.pos, targetInst.pos)
 
+	# mark instructions between current and target as skip, to skip them from executing
 	def jumpFromPosToPos(self, startPos, targetPos):
 		for pos in range(startPos+1, targetPos):
 			self.context.getCurrentFunction().getInstructionByPos(pos).skip = True
@@ -337,15 +338,20 @@ class Executer:
 
 	def classifyOverflowVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
-		if(dataSize > destVar.size): # TODO, check if works, changed from destVar.effectiveSize to destVar.size
+		# if there is a var overflow, calculate where it ends
+		# VAR
+		if(dataSize > destVar.size): 
 			endOfOverflowAddress = int(destVar.address,16) + dataSize
+			# now find all variables that "intersect" this writing range, for reporting var overflows
 			for variable in self.context.getVariables():
 				if variable.name != destVar.name and int(variable.address,16) < endOfOverflowAddress and int(variable.address,16) > int(destVar.address,16):
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
 					self.saveVulnerability(vuln1)
+			#RBP
 			if endOfOverflowAddress > 0: # excludes endOfOVerflowAddress, border case
 				vuln2 = RBPOverflow(self.currentFunction.name, faddress, fname, destVar.name)
 				self.saveVulnerability(vuln2)
+				# RET
 				if endOfOverflowAddress > 4: # excludes endOfOVerflowAddress, border case
 					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destVar.name)
 					self.saveVulnerability(vuln3)
@@ -353,17 +359,19 @@ class Executer:
 
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
 		destVar = self.context.getVariableByAddress(self.context.getValue(destinationRegister))
+		# if there is a var overflow, calculate where it ends
 		if dataSize > destVar.size:
 			endOfOverflowAddress = int(destVar.address, 16) + dataSize
 			overflowRange = [int(destVar.address, 16)+destVar.size, endOfOverflowAddress]
+			# INVALIDACCS
+			# get first address that is not assigned to any local variable, for reporting invalid access
 			unAddr = self.currentFunction.getFirstUnassignedStackAddressAfterAddress(overflowRange[0])
 			if unAddr != None and unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
 				outAddressRelativeToRbp = self.context.stack.convertToRelativeAddress(hex(unAddr))
 				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
 				self.saveVulnerability(vuln1)
-
+			# SCORRUPTION
 			if endOfOverflowAddress > 16: # if writes over 0x10  # note that the position endofoverflowaddress is not overwritten, its exclusive
-				# TODO , finding this address of SCORRUPTION maybe with the stack?
 				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, "rbp+"+"0x10")
 				self.saveVulnerability(vuln2)
 

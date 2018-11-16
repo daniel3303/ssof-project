@@ -8,6 +8,7 @@ class Variable:
 		self.effectiveSize = size # size when simulating input, for example fgets size lower than max size
 		self.value = ""
 		self.isNullTerminated = True
+		# the owner frame is just the frame / function that owns the local variable
 		self.ownerFrame = None 
 		# when we access a variable from a previous frame, make sure it was passed in
 		self.passedAsArgumentToNextFrame = False 
@@ -27,6 +28,7 @@ class Variable:
 	def setAddress(self, newAddress):
 		self.address = newAddress
 
+	# assembly address is something similar to DWORD PTR [reg-addr]
 	def getAssemblyAddress(self):
 		return self.assemblyAddress
 
