@@ -23,22 +23,6 @@ class Function:
 		context.popFrame()
 
 
-	""" def getSortedListOfVariablesByAddress(self):
-		tempVarList = self.variables[:] # copy, not reference
-		sortedVars = []
-		numVarsSorted = 0
-		while numVarsSorted < len(self.variables):
-			varWithHighestAddr = tempVarList[0]
-			for var2 in tempVarList:
-				if int(var2.address,16) >= int(varWithHighestAddr.address,16):
-					varWithHighestAddr = var2
-
-			sortedVars.append(varWithHighestAddr)
-			tempVarList.remove(varWithHighestAddr)
-			numVarsSorted+=1
-
-		return sortedVars
- """
 	# search for the first unassigned stack address after startAddress
 	def getFirstUnassignedStackAddressAfterAddress(self, startAddress):
 		if len(self.variables) == 0: return

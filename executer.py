@@ -253,13 +253,13 @@ class Executer:
 			for variable in self.context.getVariables():
 				if variable.name != destVar.name and int(variable.address,16) < endOfOverflowAddress and int(variable.address,16) > int(destVar.address,16):
 					vuln1 = VarOverflow(self.currentFunction.name, faddress, fname, destVar.name, variable.name)
-					self.context.vulnerabilities.append(vuln1)
+					self.saveVulnerability(vuln1)
 			if endOfOverflowAddress >= 0:
 				vuln2 = RBPOverflow(self.currentFunction.name, faddress, fname, destVar.name)
-				self.context.vulnerabilities.append(vuln2)
+				self.saveVulnerability(vuln2)
 				if endOfOverflowAddress >= 4:
 					vuln3= RetOverflow(self.currentFunction.name, faddress, fname, destVar.name)
-					self.context.vulnerabilities.append(vuln3)
+					self.saveVulnerability(vuln3)
 
 
 	def classifyInvalidAccessVulnerability(self, dataSize, destinationRegister, fname, faddress):
@@ -271,17 +271,13 @@ class Executer:
 			if unAddr != None and unAddr >= overflowRange[0] and unAddr < endOfOverflowAddress:
 				outAddressRelativeToRbp = self.context.stack.convertToRelativeAddress(hex(overflowRange[0]))
 				vuln1 = InvalidAccess(self.currentFunction.name, faddress, fname, destVar.name, outAddressRelativeToRbp)
-				self.context.vulnerabilities.append(vuln1)
+				self.saveVulnerability(vuln1)
 
 			if endOfOverflowAddress >= 16: # if writes over 0x10
 				# TODO , finding this address of SCORRUPTION maybe with the stack?
 				vuln2 = StackCorruption(self.currentFunction.name, faddress, fname, destVar.name, "rbp+"+"0x10")
-				self.context.vulnerabilities.append(vuln2)
+				self.saveVulnerability(vuln2)
 
-	#def classifyInvalidAccessVulnerability(self, destVar, sourceVar): #TODO
-		#destAddr = destVar.getAssemblyAddress().replace("rbp-", "")
-		#size = sourceVar.effectiveSize
-		#print(int(destAddr, 16))
-		#print(size)
-		#if(int(destAddr, 16) <=  size):
-			#print("INVALIDACCS")
+	def saveVulnerability(self, vulnerability):
+		if vulnerability not in self.context.vulnerabilities: # TODO filter duplicates? need to check later
+			self.context.vulnerabilities.append(vulnerability)
