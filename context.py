@@ -121,6 +121,13 @@ class Context:
 	def returnFromCurrentFunction(self):
 		returningFrom = self.stack.getCurrentFunctionName()
 		self.popFrame()
+		
+		# undo the passed asargument flag on respective variables
+		curFrame = self.stack.getCurrentFrame()
+		if curFrame != None:
+			for var in curFrame.function.variables:
+				var.passedAsArgumentToNextFrame = False
+		
 		self.currentFunction = returningFrom
 
 

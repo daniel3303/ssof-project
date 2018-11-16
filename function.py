@@ -21,8 +21,8 @@ class Function:
 		for instruction in self.instructions:
 			if instruction.skip == False:
 				instruction.accept(executer)
-				instruction.executed = True 
-		context.popFrame()
+				instruction.executed = True
+		context.returnFromCurrentFunction() 
 
 	def getInstructionByPos(self, pos):
 		for inst in self.instructions:
