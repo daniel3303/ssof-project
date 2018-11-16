@@ -3,6 +3,7 @@ class Instruction:
 	def __init__(self, address):
 		self.address = address
 		self.op = ""
+		self.obs = None # format string purposes
 
 	#def execute(self, context): FIXME is this being used?
 		#executer(self, context)

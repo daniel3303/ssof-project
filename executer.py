@@ -103,6 +103,11 @@ class Executer:
 
 
 	def executeLea(self, instruction):
+		if instruction.obs != None:
+			# it is a format string then set it to the destination register instead of the address
+			self.context.setValue(instruction.dest , instruction.obs)
+			return
+
 		# the [1:-1] removes brackets
 		# because lea is an exception to bracket semantics: https://stackoverflow.com/a/25824111/7126027
 		self.context.setValue(instruction.dest, instruction.value[1:-1])
@@ -211,25 +216,25 @@ class Executer:
 			destVar.effectiveSize = maxDataSize
 			return
 
-		elif "_scanf" in instruction.fName:
+		elif "__isoc99_scanf" in instruction.fName:
 			formatString = self.getFunctionArgumentByIndex(0)
 			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
-			for i in range(1,formatInputCount): # skip format string
-				variableAddress = self.getFunctionArgumentByIndex(i)
+			for i in range(0,formatInputCount): # skip format string
+				destVarAddress = self.getFunctionArgumentByIndex(i+1)
 				destVar = self.context.getVariableByAddress(destVarAddress)
 				dataSize = math.inf
-				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "scanf", instruction.address)
+				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i+1), "__isoc99_scanf", instruction.address)
 				destVar.effectiveSize = math.inf
 			return
 
-		elif "fscanf" in instruction.fName:
+		elif "__isoc99_fscanf" in instruction.fName:
 			formatString = self.getFunctionArgumentByIndex(1)
-			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			formatInputCount = self.countFormatStringInputsFromFormatString(instruction.obs)
 			for i in range(2,formatInputCount): # skip file register and format string
 				variableAddress = self.getFunctionArgumentByIndex(i)
 				destVar = self.context.getVariableByAddress(destVarAddress)
 				dataSize = math.inf # file can contain "infinite" data
-				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "fscanf", instruction.address)
+				self.classifyVulnerabilities(dataSize, self.getRegisterNameByArgIndex(i), "__isoc99_fscanf", instruction.address)
 				destVar.effectiveSize = math.inf
 			return
 
@@ -334,3 +339,4 @@ class Executer:
 	def saveVulnerability(self, vulnerability):
 		if vulnerability not in self.context.vulnerabilities: # TODO filter duplicates? need to check later
 			self.context.vulnerabilities.append(vulnerability)
+

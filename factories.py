@@ -13,33 +13,44 @@ class InstructionFactory:
 		if "args" in jsonObject and "dest" in jsonObject["args"]:
 			if  jsonObject["args"]["dest"][0]=="e":
 				jsonObject["args"]["dest"] = "r" + jsonObject["args"]["dest"][1:]
-					
+
+		instruction = None		
+		
 		if(jsonObject["op"] == "add"):
-			return Add(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
+			instruction = Add(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
 		if(jsonObject["op"] == "lea"):
-			return Lea(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
+			instruction =Lea(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
 		if(jsonObject["op"] == "mov"):
-			return Mov(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
+			instruction =Mov(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
 		if(jsonObject["op"] == "sub"):
-			return Sub(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
+			instruction =Sub(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"])
 		if(jsonObject["op"] == "call"):
-			return Call(jsonObject["address"], jsonObject["args"]["fnname"], jsonObject["args"]["address"])
+			instruction =Call(jsonObject["address"], jsonObject["args"]["fnname"], jsonObject["args"]["address"])
 		if(jsonObject["op"] == "cmp"):
-			return Cmp(jsonObject["address"], jsonObject["args"]["arg0"], jsonObject["args"]["arg1"])
+			instruction =Cmp(jsonObject["address"], jsonObject["args"]["arg0"], jsonObject["args"]["arg1"])
 		if(jsonObject["op"] == "test"):
-			return Test(jsonObject["address"], jsonObject["args"]["arg0"], jsonObject["args"]["arg1"])
+			instruction =Test(jsonObject["address"], jsonObject["args"]["arg0"], jsonObject["args"]["arg1"])
 		if(jsonObject["op"] == "je"):
-			return Je(jsonObject["address"], jsonObject["args"]["address"])
+			instruction =Je(jsonObject["address"], jsonObject["args"]["address"])
 		if(jsonObject["op"] == "jmp"):
-			return Jmp(jsonObject["address"], jsonObject["args"]["address"])
+			instruction =Jmp(jsonObject["address"], jsonObject["args"]["address"])
 		if(jsonObject["op"] == "jne"):
-			return Jne(jsonObject["address"], jsonObject["args"]["address"])
+			instruction =Jne(jsonObject["address"], jsonObject["args"]["address"])
 		if(jsonObject["op"] == "leave"):
-			return Leave(jsonObject["address"])
+			instruction =Leave(jsonObject["address"])
 		if(jsonObject["op"] == "nop"):
-			return Nop(jsonObject["address"])
+			instruction =Nop(jsonObject["address"])
 		if(jsonObject["op"] == "ret"):
-			return Ret(jsonObject["address"])
+			instruction =Ret(jsonObject["address"])
 		if(jsonObject["op"] == "push"):
-			return Push(jsonObject["address"], jsonObject["args"]["value"])
+			instruction =Push(jsonObject["address"], jsonObject["args"]["value"])
+
+ 		# format string in args.obs
+		if "args" in jsonObject and "obs" in jsonObject["args"]:
+			instruction.obs = jsonObject["args"]["obs"]
+
+		return instruction
+
+
+
 
