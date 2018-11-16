@@ -1,3 +1,4 @@
+#Class representing a function variable/parameter
 class Variable:
 	def __init__(self, var_name, var_type, size, assemblyAddress):
 		self.name = var_name
@@ -7,12 +8,14 @@ class Variable:
 		self.assemblyAddress = assemblyAddress #Address string on assembly (eg ebp-0x80)
 		self.effectiveSize = size # size when simulating input, for example fgets size lower than max size
 		self.value = ""
+		# in case the variable is a string
 		self.isNullTerminated = True
 		# the owner frame is just the frame / function that owns the local variable
-		self.ownerFrame = None 
+		self.ownerFrame = None
 		# when we access a variable from a previous frame, make sure it was passed in
-		self.passedAsArgumentToNextFrame = False 
+		self.passedAsArgumentToNextFrame = False
 
+	#Some getters and setters
 	def getName(self):
 		return self.name
 
