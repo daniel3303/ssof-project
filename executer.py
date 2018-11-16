@@ -14,10 +14,10 @@ class Executer:
 	# "Overloading"
 	def visit(self, instruction):
 		self.currentFunction = self.context.getCurrentFunction()
+		print(instruction.op)
 
 		if isinstance(instruction, Call):
 			self.executeCall(instruction)
-			print("\nCALL\n")
 		elif isinstance(instruction, Cmp):
 			self.executeCmp(instruction,)
 		elif isinstance(instruction, Je):
@@ -39,8 +39,8 @@ class Executer:
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction)
 
-		self.context.printRegisters()
-		print("\n\n")
+		#self.context.printRegisters()
+		#print("\n\n")
 
 	# :::::::: execute methods ::::::::::
 
@@ -119,7 +119,9 @@ class Executer:
 		return
 
 	def isUserDefinedFunction(self, fname):
-		return "<"+fname+">" in self.context.functions
+		fname = fname[1:-1]
+		return self.context.isUserDefinedFunction(fname)
+		#return "<"+fname+">" in self.context.functions isto não funciona assim
 
 
 	def executeCall(self, instruction):
@@ -128,6 +130,7 @@ class Executer:
 			rawFunName = instruction.fName[1:-1]
 			# TODO calling other funcs here
 			#self.context.functions[rawFunName].execute(self.context)
+			self.context.callFunction(rawFunName)
 
 		# num-1 characters are read, and \0 is appended, so maxDataSize is the num itself in rsi
 		if "fgets" in instruction.fName:
@@ -250,7 +253,7 @@ class Executer:
 		return
 
 	def executeRet(self, instruction):
-		self.context.popFrame()
+		self.context.returnFromCurrentFunction()
 		return
 
 	# missing some, like Nop that was deleted, was it really necessary?

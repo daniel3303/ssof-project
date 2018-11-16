@@ -1,8 +1,8 @@
 from executer import Executer
 class Function:
 
-	def __init__(self, function_name):
-		self.name = function_name
+	def __init__(self, functionName):
+		self.name = functionName
 		self.instructions = []
 		self.variables = []
 
@@ -40,7 +40,7 @@ class Function:
 		sortedVars = sorted(self.variables, key=lambda x: int(x.address,16), reverse=False)
 
 		for idx, var in enumerate(sortedVars):
-			nextAddress = int(var.address,16) + var.size
+			nextAddress = int(var.address, 16) + var.size
 			# if there exists a var after this one
 			if idx < len(sortedVars)-1:
 				if nextAddress == int(sortedVars[idx+1].address,16):
@@ -80,3 +80,6 @@ class Function:
 			address = int(var.getAssemblyAddress()[3:], 16) + int(newRBP, 16)
 			address = hex(address)
 			var.setAddress(address)
+
+	def getName(self):
+		return self.name
