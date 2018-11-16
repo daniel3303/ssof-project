@@ -7,7 +7,8 @@ class Function:
 		self.variables = []
 
 	def addInstruction(self, instruction):
-		instruction.address = instruction.address.encode('utf-8')
+		#instruction.address = instruction.address.encode('utf-8') this causes JSON dump to fail (it does no process bytes)
+		instruction.address = instruction.address
 		self.instructions.append(instruction)
 
 	def addVariable(self, variable):
@@ -41,12 +42,12 @@ class Function:
 	def getFirstUnassignedStackAddressAfterAddress(self, startAddress):
 		if len(self.variables) == 0: return
 		sortedVars = self.getSortedListOfVariablesByAddress()
-		
+
 		for idx, var in enumerate(sortedVars):
 			# if there exists a var after this one
 			if idx < len(sortedVars)-1:
 				nextAddress = -int(var.address,16) + var.size
-				if nextAddress == sortedVars[idx+1].address: 
+				if nextAddress == sortedVars[idx+1].address:
 					continue
 				else:
 					return nextAddress

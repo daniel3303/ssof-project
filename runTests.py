@@ -4,7 +4,7 @@ import errno
 import glob
 import json
 import subprocess
-from parser import Parser
+import parser
 
 path = 'tests/*.json'
 inFiles = [name for name in glob.glob(path) if 'output' not in os.path.basename(name)]

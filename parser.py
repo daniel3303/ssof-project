@@ -35,7 +35,7 @@ class Parser:
 
 if __name__ == "__main__":
 	if sys.version_info[0] < 3:
-    	raise Exception("You must be using Python 3 to execute this program.")
+		raise Exception("You must be using Python 3 to execute this program.")
 
 
 	if len(sys.argv) != 2:
