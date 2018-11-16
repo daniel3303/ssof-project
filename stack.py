@@ -78,7 +78,6 @@ class Stack:
 	def getCurrentFrame(self):
 		return self.frames[-1]
 
-
 # Represents a Stack Frame
 class Frame:
 

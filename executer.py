@@ -103,7 +103,7 @@ class Executer:
 			return
 
 		elif "strncpy" in instruction.fName:
-			maxSizeN = int(self.getFunctionArgumentByIndex(2),16)
+			maxSizeN = int(self.getFunctionArgumentByIndex(2),16) 
 			sourceAddr = self.getFunctionArgumentByIndex(1)
 			sourceVar = self.context.getVariableByAddress(sourceAddr)
 			sourceVarSize = sourceVar.effectiveSize
@@ -111,8 +111,12 @@ class Executer:
 			destVar = self.context.getVariableByAddress(destAddr)
 			maxDataSize = min(maxSizeN, sourceVarSize)
 			destVar.effectiveSize = maxDataSize
+
+			# if source is longer than maxSizeN, then destination will not have a null terminate appended
+			if sourceVarSize >= maxSizeN:
+				destVar.isNullTerminated = False
+				destVar.effectiveSize = math.inf
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "strncpy", instruction.address)
-			destVar.effectiveSize = maxDataSize
 			return
 
 		elif "strncat" in instruction.fName:

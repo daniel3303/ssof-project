@@ -7,6 +7,7 @@ class Variable:
 		self.assemblyAddress = assemblyAddress #Address string on assembly (eg ebp-0x80)
 		self.effectiveSize = size # size when simulating input, for example fgets size lower than max size
 		self.value = ""
+		self.isNullTerminated = True
 
 	def getName(self):
 		return self.name
