@@ -36,7 +36,6 @@ class Function:
 
 	def getUnassignedStackAddressRange(self):
 		if len(self.variables) == 0: return
-		#sortedVars = self.getSortedListOfVariablesByAddress()
 		sortedVars = sorted(self.variables, key=lambda x: int(x.address,16), reverse=False)
 
 		for idx, var in enumerate(sortedVars):

@@ -5,7 +5,6 @@ import re
 import math
 
 class Executer:
-
 	def __init__(self, context):
 		self.context = context
 		# helper array containing the order of how arguments are passed to functions in 64 bits
@@ -38,6 +37,8 @@ class Executer:
 			self.executeRet(instruction)
 		elif isinstance(instruction, Test):
 			self.executeTest(instruction)
+		elif isinstance(instruction, Nop):
+			self.executeNop(instruction)
 
 		#self.context.printRegisters()
 		#print("\n\n")
@@ -106,6 +107,9 @@ class Executer:
 		curFunction = self.context.getCurrentFunction()
 		return curFunction.isAddressUnassignedStackAddress(addr)
 
+	def executeNop(self, instruction):
+		# do nothing
+		return 
 
 	def executeLea(self, instruction):
 		if instruction.obs != None:

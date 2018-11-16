@@ -15,7 +15,6 @@ class InstructionFactory:
 				jsonObject["args"]["dest"] = "r" + jsonObject["args"]["dest"][1:]
 
 		instruction = None		
-		
 		if(jsonObject["op"] == "add"):
 			instruction = Add(jsonObject["address"], jsonObject["args"]["dest"], jsonObject["args"]["value"], jsonObject["pos"])
 		if(jsonObject["op"] == "lea"):

@@ -1,3 +1,7 @@
+# This script is optional and was developed to aid the testing and debugging process of the project
+# it runs the program on each test input file ending in .json and not in .output.json
+# from a tests folder
+
 import sys
 import os
 import errno
@@ -12,6 +16,8 @@ inFiles = [name for name in glob.glob(path) if 'output' not in os.path.basename(
 out = ""
 testPassCtr = 0
 
+# Printing with colors for test result visibility 
+#https://stackoverflow.com/questions/287871/print-in-terminal-with-colors
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
