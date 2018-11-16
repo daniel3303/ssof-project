@@ -1,8 +1,8 @@
 from executer import Executer
 class Function:
 
-	def __init__(self, function_name):
-		self.name = function_name
+	def __init__(self, functionName):
+		self.name = functionName
 		self.instructions = []
 		self.variables = []
 
@@ -68,3 +68,6 @@ class Function:
 			address = int(var.getAssemblyAddress()[3:], 16) + int(newRBP, 16)
 			address = hex(address)
 			var.setAddress(address)
+
+	def getName(self):
+		return self.name
