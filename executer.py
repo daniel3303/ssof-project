@@ -14,6 +14,7 @@ class Executer:
 	# "Overloading"
 	def visit(self, instruction):
 		self.currentFunction = self.context.getCurrentFunction()
+		print(instruction.op)
 
 		if isinstance(instruction, Call):
 			self.executeCall(instruction)

@@ -105,6 +105,7 @@ class Frame:
 
 	# given rbp+0x10 return variable at location
 	def getVariableByAddress(self, address):
+		print("getting:"+address)
 		for var in self.function.variables:
 			if address == var.getAssemblyAddress():
 				return var
