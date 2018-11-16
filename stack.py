@@ -136,6 +136,7 @@ class Frame:
 			self.getVariableByAddress(address).setValue(value)
 		else:
 		#	'''TODO adicionar logica para tratar casos em que posicao relativa nao coincide com variavel'''
+			return
 
 	def updateVarsAddress(self, newRBP):
 		self.function.updateVarsAddress(newRBP)
