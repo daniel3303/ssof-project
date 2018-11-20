@@ -6,7 +6,7 @@ class Stack:
 		self.context = context
 		self.frames = []
 
-
+	
 	def setValue(self, location, value):
 		value = self.processAssemblyLiteral(value)
 		if self.context.isRegister(location):
@@ -16,10 +16,7 @@ class Stack:
 		elif self.isRelativeAddress(location):
 			location = self.removeSizeDirectives(location)
 			self.getCurrentFrame().setValue(location, value)
-		#* TODO: endereco absoluto. op do tipo mov :
-		#* else:
-		#*
-
+	
 	def removeSizeDirectives(self, address):
 		return address[11:-1]
 
@@ -39,6 +36,7 @@ class Stack:
 		# else numeric
 		return value
 
+	# is address relative to rbp? like rbp-0x50
 	def isRelativeAddress(self, location):
 		return isinstance(location, str) and ("rbp-" in location or "rbp+" in location)
 
@@ -58,6 +56,7 @@ class Stack:
 		elif(self.context.isRegister(location)):
 			return self.context.registers[location]
 
+	# find variable by address, if there are variables passed by argument, find those first
 	def getVariableByAddress(self, address):
 		if(not self.isRelativeAddress(address)):
 			address = self.convertToRelativeAddress(address)

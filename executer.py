@@ -51,7 +51,6 @@ class Executer:
 			self.context.setValue(instruction.dest, value)
 
 		# Makes a mov operation where the value to copy is a value on the stack
-		# TODO this is broken, never is considered as stack adress, and if it is, the getValue returns None
 		elif self.context.isStackAddress(instruction.value):
 			value = self.context.getValue(instruction.value)
 			self.context.setValue(instruction.dest, value)
@@ -62,7 +61,6 @@ class Executer:
 
 		self.validateDirectAccess(instruction)
 
-	# TODO not working properly, destAddr for stack corruption is always positive and invalid access not being detected
 	def validateDirectAccess(self, instruction):
 		if self.context.isStackAddress(instruction.dest):
 			## DIRECT WRITE ACCESS
@@ -127,10 +125,8 @@ class Executer:
 
 
 	def executeCall(self, instruction):
-		# TODO arguments are not passed properly from frame to frame
 		if self.isUserDefinedFunction(instruction.fName):
 			rawFunName = instruction.fName[1:-1]
-			# TODO calling other funcs here
 			#self.context.functions[rawFunName].execute(self.context)
 			self.context.callFunction(rawFunName)
 
@@ -206,20 +202,33 @@ class Executer:
 			return
 
 		elif "sprintf" in instruction.fName:
-			# count % in format string, so we know which registers to check
-			# TODO rsi register contains the format string and get value should return the format string
-			# TODO do we consider strings only? -> %s  or consider %d , and ...
 			destVarAddress = self.getFunctionArgumentByIndex(0)
 			destVar = self.context.getVariableByAddress(destVarAddress)
 			formatString = self.getFunctionArgumentByIndex(1)
 			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
 			maxDataSize = 0
-			for i in range(2, formatInputCount): # skip destination and format string
-				variableAddress = self.getFunctionArgumentByIndex(i)
+			for i in range(0, formatInputCount): # skip destination and format string
+				variableAddress = self.getFunctionArgumentByIndex(i+2)
 				variable = self.context.getVariableByAddress(variableAddress)
 				maxDataSize += variable.effectiveSize
 			self.classifyVulnerabilities(maxDataSize, self.getRegisterNameByArgIndex(0), "sprintf", instruction.address)
 			destVar.effectiveSize = maxDataSize
+			return
+
+		elif "snprintf" in instruction.fName:
+			destVarAddress = self.getFunctionArgumentByIndex(0)
+			destVar = self.context.getVariableByAddress(destVarAddress)
+			maxSizeN = self.getFunctionArgumentByIndex(1)
+			formatString = self.getFunctionArgumentByIndex(2)
+			formatInputCount = self.countFormatStringInputsFromFormatString(formatString)
+			maxDataSize = 0
+			for i in range(0, formatInputCount): # skip destination, size arg and format string
+				variableAddress = self.getFunctionArgumentByIndex(i+3)
+				variable = self.context.getVariableByAddress(variableAddress)
+				maxDataSize += variable.effectiveSize
+			totalSizeN = min(maxDataSize, int(maxSizeN,16))
+			self.classifyVulnerabilities(totalSizeN, self.getRegisterNameByArgIndex(0), "snprintf", instruction.address)
+			destVar.effectiveSize = totalSizeN
 			return
 
 		elif "__isoc99_scanf" in instruction.fName:
@@ -248,7 +257,8 @@ class Executer:
 	def executeLeave(self, instruction): # locals are cleared when we pop the frame of the function that we're returning from
 		return
 
-	def executePush(self, instruction): # we dont keep track of stack pointer
+	def executePush(self, instruction): 
+		# not needed, we dont keep track of stack pointer
 		return
 
 	def executeRet(self, instruction):
@@ -256,11 +266,11 @@ class Executer:
 		return
 
 	def executeAdd(self, instruction):
-		#TODO, although we dont keep track of stack pointer, just incase
+		# not needed, we dont keep track of stack pointer
 		return
 
 	def executeSub(self, instruction):
-		#TODO, although we dont keep track of stack pointer, just incase
+		# not needed, we dont keep track of stack pointer
 		return
 
 	# ZF is the zero flag, used for jumps
@@ -315,11 +325,9 @@ class Executer:
 	def isMemoryPosition(self, memPos):
 		return isinstance(memPos, str) and "WORD PTR" in memPos
 
-		# TODO CALL other functions and argument passing
 		# consider direct access like a[10] = 20
 
 	def countFormatStringInputsFromFormatString(self, formatString):
-		# TODO make sure formatString is a string type from where you get it!
 		if isinstance(formatString , str):
 			return formatString.count('%s')
 
